@@ -4,6 +4,19 @@ public class Game {
     private Room currentRoom;
     private int passosRestantes;
 
+    public static final int[][] MAPA_NIVEL = {
+        {0, 0, 0, 1, 1, 0, 0, 0, 0, 2},
+        {0, 1, 0, 0, 0, 0, 1, 1, 0, 0},
+        {0, 1, 1, 1, 0, 1, 1, 0, 0, 1},
+        {0, 0, 0, 1, 0, 0, 0, 0, 1, 1},
+        {1, 1, 0, 1, 1, 1, 0, 1, 1, 0},
+        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+        {0, 1, 1, 1, 0, 1, 1, 1, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 1, 1, 1, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    };
+
     public Game() {
         iniciarJogo();
     }
@@ -15,24 +28,12 @@ public class Game {
 
     private void criarSalas() {
         Room[][] grid = new Room[10][10];
-        int[][] mapa = {
-            {0, 0, 0, 1, 1, 0, 0, 0, 0, 2},
-            {0, 1, 0, 0, 0, 0, 1, 1, 0, 0},
-            {0, 1, 1, 1, 0, 1, 1, 0, 0, 1},
-            {0, 0, 0, 1, 0, 0, 0, 0, 1, 1},
-            {1, 1, 0, 1, 1, 1, 0, 1, 1, 0},
-            {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-            {0, 1, 1, 1, 0, 1, 1, 1, 1, 0},
-            {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 1, 0, 1, 1, 1, 1, 1, 1, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-        };
 
         for (int linha = 0; linha < 10; linha++) {
             for (int coluna = 0; coluna < 10; coluna++) {
-                if (mapa[linha][coluna] != 1) {
-                    boolean prof = (mapa[linha][coluna] == 2);
-                    grid[linha][coluna] = new Room("Corredor", coluna, linha, prof);
+                if (MAPA_NIVEL[linha][coluna] != 1) {
+                    boolean prof = (MAPA_NIVEL[linha][coluna] == 2);
+                    grid[linha][coluna] = new Room(coluna, linha, prof);
                 }
             }
         }
@@ -51,13 +52,7 @@ public class Game {
         currentRoom = grid[9][0];
     }
 
-    public void processarComando(Command command) {
-        if (command.getCommandWord() == CommandWord.GO) {
-            mover(command.getSecondWord());
-        }
-    }
-
-    private void mover(String direction) {
+    public void mover(String direction) {
         Room nextRoom = currentRoom.getExit(direction);
         if (nextRoom != null) {
             currentRoom = nextRoom;

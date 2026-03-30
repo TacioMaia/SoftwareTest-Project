@@ -45,14 +45,19 @@ public class JogoTCCVisual extends JFrame {
     private void processarTecla(int codigoTecla) {
         if (game.isDerrota() || game.isVitoria()) return;
 
-        Command comando = null;
-        if (codigoTecla == KeyEvent.VK_UP || codigoTecla == KeyEvent.VK_W) comando = new Command(CommandWord.GO, "north");
-        else if (codigoTecla == KeyEvent.VK_DOWN || codigoTecla == KeyEvent.VK_S) comando = new Command(CommandWord.GO, "south");
-        else if (codigoTecla == KeyEvent.VK_LEFT || codigoTecla == KeyEvent.VK_A) comando = new Command(CommandWord.GO, "west");
-        else if (codigoTecla == KeyEvent.VK_RIGHT || codigoTecla == KeyEvent.VK_D) comando = new Command(CommandWord.GO, "east");
+        boolean moveu = false;
 
-        if (comando != null) {
-            game.processarComando(comando);
+        if (codigoTecla == KeyEvent.VK_UP || codigoTecla == KeyEvent.VK_W) {
+            game.mover("north"); moveu = true;
+        } else if (codigoTecla == KeyEvent.VK_DOWN || codigoTecla == KeyEvent.VK_S) {
+            game.mover("south"); moveu = true;
+        } else if (codigoTecla == KeyEvent.VK_LEFT || codigoTecla == KeyEvent.VK_A) {
+            game.mover("west"); moveu = true;
+        } else if (codigoTecla == KeyEvent.VK_RIGHT || codigoTecla == KeyEvent.VK_D) {
+            game.mover("east"); moveu = true;
+        }
+
+        if (moveu) {
             atualizarInterface();
             verificarFimDeJogo();
         }
@@ -71,11 +76,11 @@ public class JogoTCCVisual extends JFrame {
 
     private void verificarFimDeJogo() {
         if (game.isVitoria()) {
-            JOptionPane.showMessageDialog(this, "Sucesso! Você entregou o TCC e foi aprovado!");
+            JOptionPane.showMessageDialog(this, "Sucesso! Entregaste o TCC e foste aprovado!");
             game.iniciarJogo();
             atualizarInterface();
         } else if (game.isDerrota()) {
-            JOptionPane.showMessageDialog(this, "Fim da linha! O prazo acabou e você pegou DP...");
+            JOptionPane.showMessageDialog(this, "Fim da linha! O prazo acabou e chumbaste...");
             game.iniciarJogo();
             atualizarInterface();
         }
@@ -99,27 +104,15 @@ public class JogoTCCVisual extends JFrame {
                 }
             }
 
-            int[][] mapa = {
-                {0, 0, 0, 1, 1, 0, 0, 0, 0, 2},
-                {0, 1, 0, 0, 0, 0, 1, 1, 0, 0},
-                {0, 1, 1, 1, 0, 1, 1, 0, 0, 1},
-                {0, 0, 0, 1, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 1, 1, 1, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-                {0, 1, 1, 1, 0, 1, 1, 1, 1, 0},
-                {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 1, 0, 1, 1, 1, 1, 1, 1, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-            };
-
             for (int linha = 0; linha < LINHAS; linha++) {
                 for (int coluna = 0; coluna < COLUNAS; coluna++) {
                     int x = coluna * TAMANHO;
                     int y = linha * TAMANHO;
-                    if (mapa[linha][coluna] == 1) {
+                    
+                    if (Game.MAPA_NIVEL[linha][coluna] == 1) {
                         g.setColor(new Color(139, 69, 19));
                         g.fillRect(x + 2, y + 2, TAMANHO - 4, TAMANHO - 4);
-                    } else if (mapa[linha][coluna] == 2) {
+                    } else if (Game.MAPA_NIVEL[linha][coluna] == 2) {
                         g.setColor(Color.GREEN);
                         g.fillRect(x + 2, y + 2, TAMANHO - 4, TAMANHO - 4);
                     }

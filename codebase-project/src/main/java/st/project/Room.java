@@ -3,14 +3,12 @@ package st.project;
 import java.util.HashMap;
 
 public class Room {
-    private String description;
     private HashMap<String, Room> exits;
     private int posX;
     private int posY;
     private boolean isProfessor;
 
-    public Room(String description, int x, int y, boolean professor) {
-        this.description = description;
+    public Room(int x, int y, boolean professor) {
         this.posX = x;
         this.posY = y;
         this.isProfessor = professor;
