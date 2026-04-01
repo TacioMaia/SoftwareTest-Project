@@ -21,6 +21,13 @@ public class Game {
         iniciarJogo();
     }
 
+    public void setEstadoParaTestes(int passos, Room sala) {
+        this.passosRestantes = passos;
+        this.currentRoom = sala;
+    }
+
+
+
     public void iniciarJogo() {
         passosRestantes = 20;
         criarSalas();
