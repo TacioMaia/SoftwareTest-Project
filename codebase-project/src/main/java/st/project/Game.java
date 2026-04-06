@@ -3,56 +3,64 @@ package st.project;
 public class Game {
     private Room currentRoom;
     private int passosRestantes;
+    private int passosIniciais;
+    private int[][] mapa;
 
-    public static final int[][] MAPA_NIVEL = {
-        {0, 0, 0, 1, 1, 0, 0, 0, 0, 2},
-        {0, 1, 0, 0, 0, 0, 1, 1, 0, 0},
-        {0, 1, 1, 1, 0, 1, 1, 0, 0, 1},
-        {0, 0, 0, 1, 0, 0, 0, 0, 1, 1},
-        {1, 1, 0, 1, 1, 1, 0, 1, 1, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        {0, 1, 1, 1, 0, 1, 1, 1, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 0, 1, 1, 1, 1, 1, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    };
-
-    public Game() {
+    public Game(int passosIniciais, int[][] mapa) {
+        this.passosIniciais = passosIniciais;
+        this.mapa = mapa;
         iniciarJogo();
     }
 
     public void iniciarJogo() {
-        passosRestantes = 20;
+        this.passosRestantes = passosIniciais;
         criarSalas();
     }
 
     private void criarSalas() {
-        Room[][] grid = new Room[10][10];
+        int linhas = mapa.length;
+        int colunas = mapa[0].length;
+        Room[][] grid = new Room[linhas][colunas];
 
-        for (int linha = 0; linha < 10; linha++) {
-            for (int coluna = 0; coluna < 10; coluna++) {
-                if (MAPA_NIVEL[linha][coluna] != 1) {
-                    boolean prof = (MAPA_NIVEL[linha][coluna] == 2);
+        for (int linha = 0; linha < linhas; linha++) {
+            for (int coluna = 0; coluna < colunas; coluna++) {
+                if (mapa[linha][coluna] != 1) { 
+                    boolean prof = (mapa[linha][coluna] == 2);
                     grid[linha][coluna] = new Room(coluna, linha, prof);
                 }
             }
         }
 
-        for (int linha = 0; linha < 10; linha++) {
-            for (int coluna = 0; coluna < 10; coluna++) {
+        for (int linha = 0; linha < linhas; linha++) {
+            for (int coluna = 0; coluna < colunas; coluna++) {
                 Room sala = grid[linha][coluna];
                 if (sala != null) {
                     if (linha > 0 && grid[linha - 1][coluna] != null) sala.setExit("north", grid[linha - 1][coluna]);
-                    if (linha < 9 && grid[linha + 1][coluna] != null) sala.setExit("south", grid[linha + 1][coluna]);
+                    if (linha < linhas - 1 && grid[linha + 1][coluna] != null) sala.setExit("south", grid[linha + 1][coluna]);
                     if (coluna > 0 && grid[linha][coluna - 1] != null) sala.setExit("west", grid[linha][coluna - 1]);
-                    if (coluna < 9 && grid[linha][coluna + 1] != null) sala.setExit("east", grid[linha][coluna + 1]);
+                    if (coluna < colunas - 1 && grid[linha][coluna + 1] != null) sala.setExit("east", grid[linha][coluna + 1]);
                 }
             }
         }
-        currentRoom = grid[9][0];
+        
+        if (grid[linhas - 1][0] != null) {
+            currentRoom = grid[linhas - 1][0];
+        } else {
+            for(int l = linhas - 1; l >= 0; l--) {
+                for(int c = 0; c < colunas; c++){
+                    if(grid[l][c] != null){
+                        currentRoom = grid[l][c];
+                        break;
+                    }
+                }
+                if(currentRoom != null) break;
+            }
+        }
     }
 
     public void mover(String direction) {
+        if (isDerrota() || isVitoria()) return; 
+
         Room nextRoom = currentRoom.getExit(direction);
         if (nextRoom != null) {
             currentRoom = nextRoom;
