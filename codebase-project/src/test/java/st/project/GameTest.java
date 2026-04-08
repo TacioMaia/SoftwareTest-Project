@@ -5,9 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName; 
 import org.junit.jupiter.api.Test;
 
-//import st.project.Game;
-//import st.project.Room;
-
 class GameTest{
     // Mapa fantasma para não quebrar o construtor original
     private final int[][] MAPA_DUMMY = {{0}};
@@ -194,10 +191,187 @@ class GameTest{
         assertThat(jogoTestandoReset.isDerrota()).isFalse();
         assertThat(jogoTestandoReset.isVitoria()).isFalse();
     }
-  
+
+    
+
+    //---------------------------------------------------------------------------
+    //                            TESTES DE FRONTEIRA
+    //---------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Teste Fronteira: 1 passo restante em sala comum -> Jogo continua")
+    void testFronteira_UmPassoRestante_ContinuaJogando() {
+        Room salaComum = new Room(0, 0, false);
+        game.setEstadoParaTestes(1, salaComum);
+        
+        // Com 1 passo, o jogo ainda não acabou. Não é derrota nem vitória.
+        assertThat(game.isDerrota()).isFalse();
+        assertThat(game.isVitoria()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Teste Fronteira: 0 passos restantes em sala comum -> Derrota imediata")
+    void testFronteira_ZeroPassosRestantes_Derrota() {
+        Room salaComum = new Room(0, 0, false);
+        game.setEstadoParaTestes(0, salaComum);
+        
+        // Chegou a zero exatamente. O jogo deve decretar derrota.
+        assertThat(game.isDerrota()).isTrue();
+        assertThat(game.isVitoria()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Teste Fronteira: Passos negativos em sala comum -> Mantém estado de Derrota")
+    void testFronteira_PassosNegativos_Derrota() {
+        Room salaComum = new Room(0, 0, false);
+        
+        // Embora o jogo normal não deva deixar chegar a -1 (bloqueia no 0),
+        // testamos o limite inferior matemático para garantir robustez da lógica.
+        game.setEstadoParaTestes(-1, salaComum);
+        
+        assertThat(game.isDerrota()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Fronteira de Inicialização (0): Jogo criado com 0 passos já inicia em Derrota")
+    void testFronteira_PassosIniciaisZero_IniciaDerrotado() {
+        // Arrange & Act: Instancia o jogo na fronteira absoluta de passos
+        int[][] mapaComum = {{0, 0}};
+        Game jogoSemPassos = new Game(0, mapaComum);
+        
+        // Assert: O jogo já deve nascer finalizado
+        assertThat(jogoSemPassos.isDerrota()).isTrue();
+        assertThat(jogoSemPassos.getPassosRestantes()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Fronteira com Vitória (0 passos): Chegar ao professor no limite exato de passos garante a Vitória")
+    void testFronteira_ZeroPassos_NaSalaDoProfessor_Vitoria() {
+        Room salaDoProfessor = new Room(9, 0, true); // true = professor
+        game.setEstadoParaTestes(0, salaDoProfessor);
+        
+        // A vitória deve ter prioridade absoluta sobre a falta de passos
+        assertThat(game.isVitoria()).isTrue();
+        assertThat(game.isDerrota()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Fronteira com Vitória (1 passo): Chegar ao professor com passos sobrando garante a Vitória")
+    void testFronteira_UmPasso_NaSalaDoProfessor_Vitoria() {
+        Room salaDoProfessor = new Room(9, 0, true);
+        game.setEstadoParaTestes(1, salaDoProfessor);
+        
+        assertThat(game.isVitoria()).isTrue();
+        assertThat(game.isDerrota()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Fronteira com Vitória (-1 passo): Passos negativos na sala do professor ainda mantêm a Vitória")
+    void testFronteira_PassosNegativos_NaSalaDoProfessor_Vitoria() {
+        Room salaDoProfessor = new Room(9, 0, true);
+        
+        // Simula uma anomalia numérica extrema, mas garantindo que a regra da sala prevalece
+        game.setEstadoParaTestes(-1, salaDoProfessor);
+        
+        assertThat(game.isVitoria()).isTrue();
+        assertThat(game.isDerrota()).isFalse();
+    }
 
 
 
+    //---------------------------------------------------------------------------
+    //                            TESTES ESTRUTURAIS
+    //---------------------------------------------------------------------------
 
+    @Test
+    @DisplayName("Teste Estrutural: Mapeamento de salas deve cobrir ramificações Norte, Sul, Leste e Oeste")
+    void testEstrutural_CriarSalas_GeraPortasTodasDirecoes() {
+        // Matriz 3x3 força o código a validar todos os 'ifs' de vizinhança no criarSalas()
+        int[][] mapa3x3 = {
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0}
+        };
+        Game jogo3x3 = new Game(10, mapa3x3);
+        assertThat(jogo3x3.getSalaAtual()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Teste Estrutural: Fallback de spawn deve buscar em múltiplas linhas")
+    void testEstrutural_FallbackSpawn_MultiplasLinhas() {
+        // Linha inferior inteira de paredes força o loop a quebrar e subir para a linha anterior
+        int[][] mapaFallback = {
+            {0, 0},
+            {1, 1}
+        };
+        Game jogoFallback = new Game(10, mapaFallback);
+        assertThat(jogoFallback.getSalaAtual().getY()).isEqualTo(0);
+    }
+
+    // --- Cobertura MC/DC para Operadores Lógicos ---
+
+    @Test
+    @DisplayName("MC/DC isVitoria: Sala nula (Curto-circuito retorna Falso)")
+    void testMCDC_Vitoria_SalaNula() {
+        game.setEstadoParaTestes(5, null);
+        assertThat(game.isVitoria()).isFalse();
+    }
+
+    @Test
+    @DisplayName("MC/DC isVitoria: Sala válida mas não é professor (Retorna Falso)")
+    void testMCDC_Vitoria_SalaNaoProfessor() {
+        game.setEstadoParaTestes(5, new Room(0, 0, false));
+        assertThat(game.isVitoria()).isFalse();
+    }
+
+    @Test
+    @DisplayName("MC/DC isDerrota: Com passos restantes (Curto-circuito retorna Falso)")
+    void testMCDC_Derrota_ComPassos() {
+        game.setEstadoParaTestes(1, new Room(0, 0, false));
+        assertThat(game.isDerrota()).isFalse();
+    }
+
+    @Test
+    @DisplayName("MC/DC isDerrota: Sem passos e não é vitória (Retorna Verdadeiro)")
+    void testMCDC_Derrota_SemPassos_NaoVitoria() {
+        game.setEstadoParaTestes(0, null);
+        assertThat(game.isDerrota()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Estrutural: Mapeamento de portas (True && False) - Vizinhos que são paredes")
+    void testEstrutural_CriarSalas_VizinhosSaoParedes() {
+        // Criamos um mapa em formato de cruz invertida.
+        // A sala do centro (linha 1, coluna 1) não está em nenhuma borda do mapa.
+        // No entanto, todos os seus 4 vizinhos (Norte, Sul, Leste, Oeste) são PAREDES (1).
+        int[][] mapaComParedes = {
+            {0, 1, 0},
+            {1, 0, 1},
+            {0, 1, 0}
+        };
+        
+        // Ao instanciar, o 'if (linha > 0)' será Verdadeiro, mas o 'grid != null' será Falso.
+        // Isso cobre todas as ramificações MC/DC das direções (linhas norte e leste inclusas).
+        Game jogoParedes = new Game(10, mapaComParedes);
+        
+        assertThat(jogoParedes.getSalaAtual()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Estrutural: Loop de Fallback - Mapa inteiro de paredes (forçando l < 0)")
+    void testEstrutural_FallbackSpawn_MapaTotalmenteFechado() {
+        // Um mapa onde 100% das posições são paredes (1).
+        // Isso obriga o loop 'for' das linhas a rodar até o fim e a variável 'l' ficar menor que 0,
+        // cobrindo a condição de saída natural do loop de fallback.
+        int[][] mapaFechado = {
+            {1, 1},
+            {1, 1}
+        };
+        
+        Game jogoFechado = new Game(10, mapaFechado);
+        
+        // Como não há salas, o fallback não encontra nada, e currentRoom permanece nula.
+        assertThat(jogoFechado.getSalaAtual()).isNull();
+    }
 
 }
