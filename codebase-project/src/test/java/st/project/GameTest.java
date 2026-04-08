@@ -226,26 +226,26 @@ class GameTest{
         Room salaComum = new Room(0, 0, false);
         
         // Embora o jogo normal não deva deixar chegar a -1 (bloqueia no 0),
-        // testamos o limite inferior matemático para garantir robustez da lógica.
+        // testa o limite inferior matemático para garantir robustez da lógica.
         game.setEstadoParaTestes(-1, salaComum);
         
         assertThat(game.isDerrota()).isTrue();
     }
 
     @Test
-    @DisplayName("Fronteira de Inicialização (0): Jogo criado com 0 passos já inicia em Derrota")
+    @DisplayName("Teste de Fronteira: Jogo criado com 0 passos já inicia em Derrota")
     void testFronteira_PassosIniciaisZero_IniciaDerrotado() {
-        // Arrange & Act: Instancia o jogo na fronteira absoluta de passos
+        // Instancia o jogo na fronteira absoluta de passos
         int[][] mapaComum = {{0, 0}};
         Game jogoSemPassos = new Game(0, mapaComum);
         
-        // Assert: O jogo já deve nascer finalizado
+        // O jogo já deve nascer finalizado
         assertThat(jogoSemPassos.isDerrota()).isTrue();
         assertThat(jogoSemPassos.getPassosRestantes()).isEqualTo(0);
     }
 
     @Test
-    @DisplayName("Fronteira com Vitória (0 passos): Chegar ao professor no limite exato de passos garante a Vitória")
+    @DisplayName("Teste de Fronteira: Chegar ao professor no limite exato de passos (0 passos) garante a Vitória")
     void testFronteira_ZeroPassos_NaSalaDoProfessor_Vitoria() {
         Room salaDoProfessor = new Room(9, 0, true); // true = professor
         game.setEstadoParaTestes(0, salaDoProfessor);
@@ -256,7 +256,7 @@ class GameTest{
     }
 
     @Test
-    @DisplayName("Fronteira com Vitória (1 passo): Chegar ao professor com passos sobrando garante a Vitória")
+    @DisplayName("Teste de Fronteira: Chegar ao professor com passos sobrando garante a Vitória")
     void testFronteira_UmPasso_NaSalaDoProfessor_Vitoria() {
         Room salaDoProfessor = new Room(9, 0, true);
         game.setEstadoParaTestes(1, salaDoProfessor);
@@ -266,11 +266,11 @@ class GameTest{
     }
 
     @Test
-    @DisplayName("Fronteira com Vitória (-1 passo): Passos negativos na sala do professor ainda mantêm a Vitória")
+    @DisplayName("Teste de Fronteira: Passos negativos na sala do professor ainda mantêm a Vitória")
     void testFronteira_PassosNegativos_NaSalaDoProfessor_Vitoria() {
         Room salaDoProfessor = new Room(9, 0, true);
         
-        // Simula uma anomalia numérica extrema, mas garantindo que a regra da sala prevalece
+        // Simula uma anomalia numérica, mas garantindo que a regra da sala prevalece
         game.setEstadoParaTestes(-1, salaDoProfessor);
         
         assertThat(game.isVitoria()).isTrue();
@@ -308,8 +308,6 @@ class GameTest{
         assertThat(jogoFallback.getSalaAtual().getY()).isEqualTo(0);
     }
 
-    // --- Cobertura MC/DC para Operadores Lógicos ---
-
     @Test
     @DisplayName("MC/DC isVitoria: Sala nula (Curto-circuito retorna Falso)")
     void testMCDC_Vitoria_SalaNula() {
@@ -339,9 +337,9 @@ class GameTest{
     }
 
     @Test
-    @DisplayName("Estrutural: Mapeamento de portas (True && False) - Vizinhos que são paredes")
+    @DisplayName("Teste Estrutural: Mapeamento de portas (True && False) - Vizinhos que são paredes")
     void testEstrutural_CriarSalas_VizinhosSaoParedes() {
-        // Criamos um mapa em formato de cruz invertida.
+        // Cria um mapa em formato de cruz invertida.
         // A sala do centro (linha 1, coluna 1) não está em nenhuma borda do mapa.
         // No entanto, todos os seus 4 vizinhos (Norte, Sul, Leste, Oeste) são PAREDES (1).
         int[][] mapaComParedes = {
@@ -358,7 +356,7 @@ class GameTest{
     }
 
     @Test
-    @DisplayName("Estrutural: Loop de Fallback - Mapa inteiro de paredes (forçando l < 0)")
+    @DisplayName("Teste Estrutural: Loop de Fallback - Mapa inteiro de paredes (forçando l < 0)")
     void testEstrutural_FallbackSpawn_MapaTotalmenteFechado() {
         // Um mapa onde 100% das posições são paredes (1).
         // Isso obriga o loop 'for' das linhas a rodar até o fim e a variável 'l' ficar menor que 0,
