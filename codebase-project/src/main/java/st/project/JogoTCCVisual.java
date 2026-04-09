@@ -1,13 +1,27 @@
 package st.project;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
 public class JogoTCCVisual extends JFrame {
-    private final int TAMANHO_CELULA = 80; 
+    private final int TAMANHO_CELULA = 60; 
     private final int LINHAS = 10;
     private final int COLUNAS = 10;
 
@@ -34,7 +48,7 @@ public class JogoTCCVisual extends JFrame {
     private Image spriteJogador;
 
     public JogoTCCVisual() {
-        game = new Game(20, MAPA_PRODUCAO); 
+        game = new Game(25, MAPA_PRODUCAO); 
         carregarSprites();
 
         setTitle("Corrida do TCC - Entrega Urgente!");
@@ -119,7 +133,7 @@ public class JogoTCCVisual extends JFrame {
     private void verificarFimDeJogo() {
         if (game.isVitoria()) {
             JOptionPane.showMessageDialog(this, 
-                "🏆 SUCESSO! TCC entregue!\nFoste aprovado com nota máxima!", 
+                "SUCESSO! TCC entregue!\nVocê foi aprovado com nota máxima!", 
                 "Parabéns!", 
                 JOptionPane.INFORMATION_MESSAGE, 
                 new ImageIcon(spriteProfessor));
@@ -127,7 +141,7 @@ public class JogoTCCVisual extends JFrame {
             atualizarInterface();
         } else if (game.isDerrota()) {
             JOptionPane.showMessageDialog(this, 
-                "💸 FIM DA LINHA...\nO prazo acabou e chumbaste.", 
+                "FIM DA LINHA...\nO prazo acabou e você foi reprovado.", 
                 "Game Over", 
                 JOptionPane.ERROR_MESSAGE);
             game.iniciarJogo();
