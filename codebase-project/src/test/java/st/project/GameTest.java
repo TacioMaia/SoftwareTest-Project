@@ -100,7 +100,7 @@ class GameTest{
 
     // Entradas Anormais
     @Test
-    @DisplayName("P3: Entradas anômalas (strings não reconhecidas ou nulas) devem ser tratadas como parede")
+    @DisplayName("Teste de Dominio: Entradas anormais (strings não reconhecidas ou nulas devem ser tratadas como parede)")
     void testDominio_EntradasAnomalas() {
         Room salaInicial = new Room(0, 0, false);
         game.setEstadoParaTestes(5, salaInicial);
@@ -142,16 +142,15 @@ class GameTest{
     @Test
     @DisplayName("Teste de Dominio: Inicialização deve traduzir matriz (1=Parede, 2=Prof) e usar fallback de spawn se o canto for parede")
     void testDominio_Inicializacao_TraducaoMapaESpawnAlternativo() {
-        //Cria um mini mapa de 1 linha e 3 colunas: [ Parede(1), Normal(0), Professor(2) ]
+        //Cria um mini mapa de 1 linha e 3 colunas
         int[][] mapaCustomizado = {
             {1, 0, 2}
         };
         
-        //Instancia o jogo. Ele vai rodar o criarSalas().
         Game jogo = new Game(10, mapaCustomizado);
         
         //O Fallback de Spawn funcionou?
-        // Como a posição padrão [0][0] tem o valor 1 (parede), o jogo DEVE ter nascido no [0][1].
+        // Como a posição padrão [0][0] tem o valor 1 (parede), o jogo deve ter nascido no [0][1].
         assertThat(jogo.getSalaAtual().getX()).isEqualTo(1); 
         assertThat(jogo.getSalaAtual().getY()).isEqualTo(0);
         assertThat(jogo.isVitoria()).isFalse(); // A sala [0][1] é normal (0)
@@ -221,12 +220,11 @@ class GameTest{
     }
 
     @Test
-    @DisplayName("Teste Fronteira: Passos negativos em sala comum -> Mantém estado de Derrota")
+    @DisplayName("Teste Fronteira: -1 Passos negativos em sala comum -> mantém estado de derrota")
     void testFronteira_PassosNegativos_Derrota() {
         Room salaComum = new Room(0, 0, false);
         
-        // Embora o jogo normal não deva deixar chegar a -1 (bloqueia no 0),
-        // testa o limite inferior matemático para garantir robustez da lógica.
+        // jogo normal não deva deixar chegar a -1 (bloqueia no 0).
         game.setEstadoParaTestes(-1, salaComum);
         
         assertThat(game.isDerrota()).isTrue();
@@ -309,37 +307,36 @@ class GameTest{
     }
 
     @Test
-    @DisplayName("MC/DC isVitoria: Sala nula (Curto-circuito retorna Falso)")
+    @DisplayName("Teste Estrutural MC/DC isVitoria: Sala nula retorna Falso")
     void testMCDC_Vitoria_SalaNula() {
         game.setEstadoParaTestes(5, null);
         assertThat(game.isVitoria()).isFalse();
     }
 
     @Test
-    @DisplayName("MC/DC isVitoria: Sala válida mas não é professor (Retorna Falso)")
+    @DisplayName("Teste Estrutural MC/DC isVitoria: Sala válida mas não é professor (Retorna Falso)")
     void testMCDC_Vitoria_SalaNaoProfessor() {
         game.setEstadoParaTestes(5, new Room(0, 0, false));
         assertThat(game.isVitoria()).isFalse();
     }
 
     @Test
-    @DisplayName("MC/DC isDerrota: Com passos restantes (Curto-circuito retorna Falso)")
+    @DisplayName("Teste Estrutural MC/DC isDerrota: Com passos restantes (Curto-circuito retorna Falso)")
     void testMCDC_Derrota_ComPassos() {
         game.setEstadoParaTestes(1, new Room(0, 0, false));
         assertThat(game.isDerrota()).isFalse();
     }
 
     @Test
-    @DisplayName("MC/DC isDerrota: Sem passos e não é vitória (Retorna Verdadeiro)")
+    @DisplayName("Teste Estrutural MC/DC isDerrota: Sem passos e não é vitória (Retorna Verdadeiro)")
     void testMCDC_Derrota_SemPassos_NaoVitoria() {
         game.setEstadoParaTestes(0, null);
         assertThat(game.isDerrota()).isTrue();
     }
 
     @Test
-    @DisplayName("Teste Estrutural: Mapeamento de portas (True && False) - Vizinhos que são paredes")
+    @DisplayName("Teste Estrutural MC/DC: Mapeamento de portas (True && False) - Vizinhos que são paredes")
     void testEstrutural_CriarSalas_VizinhosSaoParedes() {
-        // Cria um mapa em formato de cruz invertida.
         // A sala do centro (linha 1, coluna 1) não está em nenhuma borda do mapa.
         // No entanto, todos os seus 4 vizinhos (Norte, Sul, Leste, Oeste) são PAREDES (1).
         int[][] mapaComParedes = {
@@ -358,8 +355,7 @@ class GameTest{
     @Test
     @DisplayName("Teste Estrutural: Loop de Fallback - Mapa inteiro de paredes (forçando l < 0)")
     void testEstrutural_FallbackSpawn_MapaTotalmenteFechado() {
-        // Um mapa onde 100% das posições são paredes (1).
-        // Isso obriga o loop 'for' das linhas a rodar até o fim e a variável 'l' ficar menor que 0,
+        // Isso obriga o loop 'for' das linhas a rodar até o fim e a variável 'l' ficar menor que 0
         // cobrindo a condição de saída natural do loop de fallback.
         int[][] mapaFechado = {
             {1, 1},
@@ -368,7 +364,7 @@ class GameTest{
         
         Game jogoFechado = new Game(10, mapaFechado);
         
-        // Como não há salas, o fallback não encontra nada, e currentRoom permanece nula.
+        // Como não há salaso fallback não encontra nada, e currentRoom permanece nula.
         assertThat(jogoFechado.getSalaAtual()).isNull();
     }
 
