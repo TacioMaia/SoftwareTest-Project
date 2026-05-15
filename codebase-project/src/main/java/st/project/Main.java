@@ -4,10 +4,9 @@ import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
-        // Inicia a interface gráfica na thread correta do Java Swing
+        // Agora o ponto de entrada levanta primeiro o ecrã de Login
         SwingUtilities.invokeLater(() -> {
-            JogoTCCVisual telaDoJogo = new JogoTCCVisual();
-            telaDoJogo.setVisible(true);
+            new VistaLogin().setVisible(true);
         });
     }
 }

@@ -6,12 +6,12 @@ public class Room {
     private HashMap<String, Room> exits;
     private int posX;
     private int posY;
-    private boolean isProfessor;
+    private int tipo; 
 
-    public Room(int x, int y, boolean professor) {
+    public Room(int x, int y, int tipo) {
         this.posX = x;
         this.posY = y;
-        this.isProfessor = professor;
+        this.tipo = tipo;
         exits = new HashMap<String, Room>();
     }
 
@@ -25,5 +25,8 @@ public class Room {
 
     public int getX() { return posX; }
     public int getY() { return posY; }
-    public boolean isProfessorRoom() { return isProfessor; }
+    public int getTipo() { return tipo; }
+    public void setTipo(int tipo) { this.tipo = tipo; }
+    
+    public boolean isProfessorRoom() { return tipo == 2; }
 }
