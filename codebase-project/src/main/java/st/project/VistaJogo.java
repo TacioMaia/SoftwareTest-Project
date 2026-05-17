@@ -1,8 +1,21 @@
 package st.project;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.net.URL;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class VistaJogo extends JFrame {
     private JLabel labelStatus;
@@ -56,7 +69,7 @@ public class VistaJogo extends JFrame {
         return null; // Retorna null caso a imagem não seja encontrada
     }
 
-    public void atualizarEcra(Game game) {
+    public void atualizarTela(Game game) {
         this.gameModel = game;
         String status = String.format("Nível: %d | Pontos: %d | Passos: %d | Recurso: %s", 
             game.getNivelAtual(), game.getPontuacaoTotal(), game.getPassosRestantes(), 

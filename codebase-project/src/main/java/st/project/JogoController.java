@@ -2,6 +2,7 @@ package st.project;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
 import javax.swing.JOptionPane;
 
 public class JogoController {
@@ -22,7 +23,7 @@ public class JogoController {
 
     public void iniciar() {
         model.iniciarSessao();
-        view.atualizarEcra(model);
+        view.atualizarTela(model);
         view.setVisible(true);
     }
 
@@ -32,7 +33,7 @@ public class JogoController {
         else if (codigoTecla == KeyEvent.VK_LEFT || codigoTecla == KeyEvent.VK_A) model.mover("west");
         else if (codigoTecla == KeyEvent.VK_RIGHT || codigoTecla == KeyEvent.VK_D) model.mover("east");
         
-        view.atualizarEcra(model);
+        view.atualizarTela(model);
 
         if (model.isGameOver()) {
             view.mostrarMensagemFim();
@@ -40,10 +41,10 @@ public class JogoController {
             
             if (resp == JOptionPane.YES_OPTION) {
                 model.iniciarSessao();
-                view.atualizarEcra(model);
+                view.atualizarTela(model);
             } else {
                 view.dispose();
-                new VistaLogin().setVisible(true); // Volta ao ecrã inicial
+                new VistaLogin().setVisible(true); // Volta a tela inicial
             }
         }
     }
