@@ -24,6 +24,7 @@ public class VistaJogo extends JFrame {
 
     // Variáveis para armazenar as imagens
     private Image imgPiso, imgParede, imgProf, imgRecurso, imgAlcapao, imgPlayer;
+    private JButton btnRanking; // Transformado em atributo para testabilidade
 
     public VistaJogo() {
         carregarImagens();
@@ -41,8 +42,8 @@ public class VistaJogo extends JFrame {
         add(painelJogo, BorderLayout.CENTER);
         
         JPanel pnlSul = new JPanel();
-        JButton btnRanking = new JButton("Ver Ranking");
-        btnRanking.addActionListener(e -> new VistaRanking().setVisible(true));
+        btnRanking = new JButton("Ver Ranking");
+        btnRanking.addActionListener(e -> abrirRanking());
         btnRanking.setFocusable(false); 
         pnlSul.add(btnRanking);
         add(pnlSul, BorderLayout.SOUTH);
@@ -50,6 +51,11 @@ public class VistaJogo extends JFrame {
         pack();
         setLocationRelativeTo(null);
         setFocusable(true);
+    }
+
+    // Encapsulado para facilitar os testes da ação do botão
+    void abrirRanking() {
+        new VistaRanking().setVisible(true);
     }
 
     private void carregarImagens() {
@@ -130,4 +136,19 @@ public class VistaJogo extends JFrame {
             }
         }
     }
+
+    // ===============================================================================
+    // MÉTODOS "PACKAGE-PRIVATE" (DEFAULT) PARA TESTABILIDADE (Slide 7)
+    // Permite injetar cenários de falha de imagem e acessar componentes internos
+    // ===============================================================================
+    void setImgPiso(Image img) { this.imgPiso = img; }
+    void setImgParede(Image img) { this.imgParede = img; }
+    void setImgProf(Image img) { this.imgProf = img; }
+    void setImgRecurso(Image img) { this.imgRecurso = img; }
+    void setImgAlcapao(Image img) { this.imgAlcapao = img; }
+    void setImgPlayer(Image img) { this.imgPlayer = img; }
+    
+    JLabel getLabelStatus() { return labelStatus; }
+    PainelJogo getPainelJogo() { return painelJogo; }
+    JButton getBtnRanking() { return btnRanking; }
 }
