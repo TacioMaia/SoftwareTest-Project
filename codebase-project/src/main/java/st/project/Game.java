@@ -12,11 +12,28 @@ public class Game {
     private int[][] mapa;
     private boolean gameOver;
 
+    // Dependência injetada opcionalmente para facilitar os testes unitários
+    private Usuario usuarioInjetado;
+
+    public Game() {
+    }
+
+    Game(Usuario usuarioInjetado) {
+        this.usuarioInjetado = usuarioInjetado;
+    }
+
+    private Usuario getUsuarioAtivo() {
+        if (usuarioInjetado != null) {
+            return usuarioInjetado;
+        }
+        return GerenciadorUsuarios.getInstancia().getUsuarioLogado();
+    }
+
     public void iniciarSessao() {
         nivelAtual = 1;
         pontuacaoTotal = 0;
         gameOver = false;
-        GerenciadorUsuarios.getInstancia().getUsuarioLogado().incrementarSessao();
+        getUsuarioAtivo().incrementarSessao();
         carregarNivel();
     }
 
@@ -117,28 +134,30 @@ public class Game {
 
     public void mover(String direction) {
         if (gameOver) return;
+        
+        // Ignora entradas inválidas para evitar exceções indesejadas
+        if (direction == null || currentRoom == null) return;
 
         Room nextRoom = currentRoom.getExit(direction);
         if (nextRoom != null) {
             passosRestantes--;
             int tipoDestino = nextRoom.getTipo();
             
-            if (tipoDestino == 3) {
-                // GANHA 100 PONTOS AO PEGAR O RECURSO
+            if (tipoDestino == 3) { // Recurso
                 pontuacaoTotal += 100;
                 temRecursoExtra = true;
                 nextRoom.setTipo(0);
                 mapa[nextRoom.getY()][nextRoom.getX()] = 0;
                 currentRoom = nextRoom;
                 
-            } else if (tipoDestino == 4) {
+            } else if (tipoDestino == 4) { // Alçapão
                 if (temRecursoExtra) {
                     temRecursoExtra = false;
                     nextRoom.setTipo(0);
                     mapa[nextRoom.getY()][nextRoom.getX()] = 0;
                     currentRoom = nextRoom;
                 } else {
-                    // PERDE 200 PONTOS AO VOLTAR DE FASE (Exceto no Nível 1)
+                    // Punição por cair no alçapão sem recurso
                     if (nivelAtual > 1) {
                         pontuacaoTotal = Math.max(0, pontuacaoTotal - 200);
                     }
@@ -150,8 +169,7 @@ public class Game {
                 currentRoom = nextRoom;
             }
 
-            if (currentRoom.getTipo() == 2) {
-                // GANHA 200 PONTOS AO PASSAR DE FASE
+            if (currentRoom.getTipo() == 2) { // Saída
                 pontuacaoTotal += 200;
                 nivelAtual++;
                 carregarNivel();
@@ -163,7 +181,7 @@ public class Game {
 
     private void finalizarJogo() {
         gameOver = true;
-        Usuario u = GerenciadorUsuarios.getInstancia().getUsuarioLogado();
+        Usuario u = getUsuarioAtivo();
         if (pontuacaoTotal > u.getPontuacaoMaxima()) {
             u.setPontuacaoMaxima(pontuacaoTotal);
         }
@@ -176,4 +194,12 @@ public class Game {
     public boolean hasRecurso() { return temRecursoExtra; }
     public int[][] getMapa() { return mapa; }
     public boolean isGameOver() { return gameOver; }
+
+    // Métodos package-private para injeção de estado em testes unitários
+    void setCurrentRoom(Room room) { this.currentRoom = room; }
+    void setPassosRestantes(int passos) { this.passosRestantes = passos; }
+    void setNivelAtual(int nivel) { this.nivelAtual = nivel; }
+    void setPontuacaoTotal(int pontuacao) { this.pontuacaoTotal = pontuacao; }
+    void setTemRecursoExtra(boolean temRecurso) { this.temRecursoExtra = temRecurso; }
+    void setGameOver(boolean isGameOver) { this.gameOver = isGameOver; }
 }
