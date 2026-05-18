@@ -1,371 +1,302 @@
 package st.project;
-import static org.assertj.core.api.Assertions.assertThat;
+
+import net.jqwik.api.*;
+import net.jqwik.api.constraints.IntRange;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName; 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-class GameTest{
-    // Mapa fantasma para não quebrar o construtor original
-    private final int[][] MAPA_DUMMY = {{0}};
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
+
+class GameTest {
+
     private Game game;
+    private Usuario mockUsuario;
 
     @BeforeEach
     void setUp() {
-        // Inicializa o jogo limpo antes de cada teste
-        game = new Game(10, MAPA_DUMMY);
+        // Configurando o Dublê de Teste (Mock) limpo para os testes unitários
+        mockUsuario = mock(Usuario.class);
+        
+        // Injeção de Dependência através do Construtor para Testabilidade (Slide 7)
+        game = new Game(mockUsuario);
+        game.iniciarSessao();
     }
 
+    // =======================================================================
+    // 1. TESTES DE DOMÍNIO E CONTRATOS 
+    // =======================================================================
 
-
-    //---------------------------------------------------------------------------
-    //                              TESTES DE DOMINIO
-    //---------------------------------------------------------------------------
-
-    // Movimentos Validos
     @Test
-    @DisplayName("Teste de Dominio:Movimentos para caminhos livres")
-    void testDominio_MovimentoValido_AlteraSalaEConsomePasso(){
-        //Cria um hub central com saídas para todos os lados
-        Room centro = new Room(1, 1, false);
-        Room norte  = new Room(1, 0, false);
-        Room sul    = new Room(1, 2, false);
-        Room leste  = new Room(2, 1, false);
-        Room oeste  = new Room(0, 1, false);
-
-        centro.setExit("north", norte);
-        centro.setExit("south", sul);
-        centro.setExit("east", leste); 
-        centro.setExit("west", oeste);
-
-        //Norte
-        game.setEstadoParaTestes(10, centro);
+    @DisplayName("Domínio: Movimento para parede (sala inexistente) não consome passos")
+    void testDominio_MovimentoParaParede() {
+        Room salaIsolada = new Room(0, 0, 0);
+        game.setCurrentRoom(salaIsolada); 
+        
+        int passosIniciais = game.getPassosRestantes();
         game.mover("north");
-        assertThat(game.getSalaAtual()).isEqualTo(norte);
-        assertThat(game.getPassosRestantes()).isEqualTo(9);
-
-        //Sul
-        game.setEstadoParaTestes(10, centro);
-        game.mover("south");
-        assertThat(game.getSalaAtual()).isEqualTo(sul);
-        assertThat(game.getPassosRestantes()).isEqualTo(9);
-
-        //Leste
-        game.setEstadoParaTestes(10, centro);
-        game.mover("east");
-        assertThat(game.getSalaAtual()).isEqualTo(leste);
-        assertThat(game.getPassosRestantes()).isEqualTo(9);
-
-        //Oeste
-        game.setEstadoParaTestes(10, centro);
-        game.mover("west");
-        assertThat(game.getSalaAtual()).isEqualTo(oeste);
-        assertThat(game.getPassosRestantes()).isEqualTo(9);
+        
+        assertThat(game.getPassosRestantes()).isEqualTo(passosIniciais);
     }
 
     @Test
-    @DisplayName("Teste de Dominio:Movimentos para sala do professor")
-    void testDominio_MovimentoValido_EntraNaSalaDoProfessor() {
-        //Cria uma sala comum ligada à sala do professor
-        Room salaComum = new Room(0, 0, false);
-        Room salaDoProfessor = new Room(1, 0, true);
-        salaComum.setExit("east", salaDoProfessor);
-
-        //Coloca o jogador na sala comum com passos sobrando
-        game.setEstadoParaTestes(5, salaComum);
-
-        //Move para a sala do professor
-        game.mover("east");
-
-        //Verifica a mudança de estado
-        assertThat(game.getSalaAtual()).isEqualTo(salaDoProfessor); //Conseguiu entrar
-        assertThat(game.getPassosRestantes()).isEqualTo(4); //O passo foi consumido
-        assertThat(game.isVitoria()).isTrue(); // O jogo reconheceu a vitória
-        assertThat(game.isDerrota()).isFalse(); // Garante que não houve conflito de estados
-    }
-
-    // Movimentos Inválidos
-    @Test
-    @DisplayName("Teste de Dominio:Movimentos para paredes não contam passos")
-    void testDominio_MovimentoContraParedes_NaoGastaPassos(){
-        Game game = new Game(5, MAPA_DUMMY);
-        Room salaSemSaida = new Room(0, 0, false);
+    @DisplayName("Contrato: Mover para direção nula, inválida ou sem sala atual é ignorado (Slide 4)")
+    void testContrato_DirecaoInvalida() {
+        int passosIniciais = game.getPassosRestantes();
         
-        game.setEstadoParaTestes(5, salaSemSaida);
-        game.mover("north"); 
-        
-        assertThat(game.getPassosRestantes()).isEqualTo(5); 
-        assertThat(game.getSalaAtual()).isEqualTo(salaSemSaida);
-    }
-
-    // Entradas Anormais
-    @Test
-    @DisplayName("Teste de Dominio: Entradas anormais (strings não reconhecidas ou nulas devem ser tratadas como parede)")
-    void testDominio_EntradasAnomalas() {
-        Room salaInicial = new Room(0, 0, false);
-        game.setEstadoParaTestes(5, salaInicial);
-        
-        // Tenta direção inventada
-        game.mover("diagonal");
-        assertThat(game.getPassosRestantes()).isEqualTo(5);
-        
-        // Tenta string vazia
-        game.mover("");
-        assertThat(game.getPassosRestantes()).isEqualTo(5);
-        
-        // Tenta null
+        // Quebra de contrato 1: Direções nulas ou inexistentes
         game.mover(null);
-        assertThat(game.getPassosRestantes()).isEqualTo(5);
+        game.mover("diagonal_estranha");
+        assertThat(game.getPassosRestantes()).isEqualTo(passosIniciais);
+
+        // Quebra de contrato 2: Sala atual ser nula (Garante 100% de MC/DC no ||)
+        game.setCurrentRoom(null);
+        game.mover("north"); // Não deve lançar NullPointerException
     }
 
-    // Estados Finais (GAME OVER)
-    @Test
-    @DisplayName("Teste de Dominio:Movimentos devem ser ignorados após vitória/derrota")
-    void testDominio_FimDeJogo_IgnoraMovimento(){
-        Game game = new Game(5, MAPA_DUMMY);
-        Room salaComum = new Room(0, 0, false);
-        Room salaProf = new Room(1, 0, true);
-        salaComum.setExit("east", salaProf);
+    // =======================================================================
+    // 2. TESTES DE FRONTEIRAS E ESTRUTURAIS (MC/DC) 
+    // =======================================================================
 
-        //Simula derrota e tenta andar
-        game.setEstadoParaTestes(0, salaComum);
+    @Test
+    @DisplayName("Fronteira: Passos chegam exatamente a zero finaliza o jogo")
+    void testFronteira_PassosZerados() {
+        Room salaAtual = new Room(0, 0, 0);
+        Room proximaSala = new Room(0, 1, 0);
+        salaAtual.setExit("east", proximaSala);
+        
+        game.setCurrentRoom(salaAtual);
+        game.setPassosRestantes(1); 
+        
         game.mover("east");
-        assertThat(game.getPassosRestantes()).isEqualTo(0); //Bloqueia ação / trava os passos
+        
+        assertThat(game.getPassosRestantes()).isEqualTo(0);
+        assertThat(game.isGameOver()).isTrue();
+        verify(mockUsuario, atLeastOnce()).getPontuacaoMaxima(); 
+    }
 
-        //Simula vitoria e tenta andar
-        game.setEstadoParaTestes(5, salaProf);
+    @Test
+    @DisplayName("MC/DC: Movimento bloqueado quando gameOver = true")
+    void testEstrutural_GameOverImpedeMovimento() {
+        game.setGameOver(true);
+        Room salaAnterior = game.getSalaAtual();
+        
         game.mover("north");
-        assertThat(game.getPassosRestantes()).isEqualTo(5); //Bloqueia ação / trava os passos
-    }
-    
-    // Dominio de inicio (MAPA e SPAW)
-    @Test
-    @DisplayName("Teste de Dominio: Inicialização deve traduzir matriz (1=Parede, 2=Prof) e usar fallback de spawn se o canto for parede")
-    void testDominio_Inicializacao_TraducaoMapaESpawnAlternativo() {
-        //Cria um mini mapa de 1 linha e 3 colunas
-        int[][] mapaCustomizado = {
-            {1, 0, 2}
-        };
         
-        Game jogo = new Game(10, mapaCustomizado);
-        
-        //O Fallback de Spawn funcionou?
-        // Como a posição padrão [0][0] tem o valor 1 (parede), o jogo deve ter nascido no [0][1].
-        assertThat(jogo.getSalaAtual().getX()).isEqualTo(1); 
-        assertThat(jogo.getSalaAtual().getY()).isEqualTo(0);
-        assertThat(jogo.isVitoria()).isFalse(); // A sala [0][1] é normal (0)
-        
-        //A parede (1) foi mapeada à esquerda (oeste)?
-        jogo.mover("west"); 
-        assertThat(jogo.getPassosRestantes()).isEqualTo(10); // Bateu na parede, passos não desceram
-        
-        //A sala do professor (2) foi mapeada à direita (leste)?
-        jogo.mover("east");
-        assertThat(jogo.isVitoria()).isTrue(); // Encontrou o professor!
-    }
-
-    // Dominio de reinicio (RESET)
-    @Test
-    @DisplayName("Teste de Dominio: O método iniciarJogo() deve resetar os passos e recolocar o jogador na origem")
-    void testDominio_ReiniciarJogo_ResetaEstadoCompleto() {
-        // Cria um mapa pequeno para teste (1 linha, 2 colunas)
-        int[][] mapaSimples = {{0, 0}};
-        Game jogoTestandoReset = new Game(15, mapaSimples);
-        
-        // Guarda as coordenadas da sala de origem para comparar no final
-        int xInicial = jogoTestandoReset.getSalaAtual().getX();
-        int yInicial = jogoTestandoReset.getSalaAtual().getY();
-
-        // Simula o jogador a meio de uma partida (quase a perder)
-        Room salaLonge = new Room(9, 9, false);
-        jogoTestandoReset.setEstadoParaTestes(2, salaLonge);
-
-        // O jogador (ou o sistema) reinicia a partida
-        jogoTestandoReset.iniciarJogo();
-
-        // Verifica se as variáveis vitais voltaram ao estado de fábrica
-        assertThat(jogoTestandoReset.getPassosRestantes()).isEqualTo(15); 
-        assertThat(jogoTestandoReset.getSalaAtual().getX()).isEqualTo(xInicial);
-        assertThat(jogoTestandoReset.getSalaAtual().getY()).isEqualTo(yInicial);
-        assertThat(jogoTestandoReset.isDerrota()).isFalse();
-        assertThat(jogoTestandoReset.isVitoria()).isFalse();
-    }
-
-    
-
-    //---------------------------------------------------------------------------
-    //                            TESTES DE FRONTEIRA
-    //---------------------------------------------------------------------------
-
-    @Test
-    @DisplayName("Teste Fronteira: 1 passo restante em sala comum -> Jogo continua")
-    void testFronteira_UmPassoRestante_ContinuaJogando() {
-        Room salaComum = new Room(0, 0, false);
-        game.setEstadoParaTestes(1, salaComum);
-        
-        // Com 1 passo, o jogo ainda não acabou. Não é derrota nem vitória.
-        assertThat(game.isDerrota()).isFalse();
-        assertThat(game.isVitoria()).isFalse();
+        assertThat(game.getSalaAtual()).isEqualTo(salaAnterior);
     }
 
     @Test
-    @DisplayName("Teste Fronteira: 0 passos restantes em sala comum -> Derrota imediata")
-    void testFronteira_ZeroPassosRestantes_Derrota() {
-        Room salaComum = new Room(0, 0, false);
-        game.setEstadoParaTestes(0, salaComum);
+    @DisplayName("MC/DC: Entrar em sala com Recurso (Tipo 3) aumenta 100 pontos e concede recurso")
+    void testEstrutural_PegarRecurso() {
+        Room salaAtual = new Room(0, 0, 0);
+        Room salaRecurso = new Room(1, 0, 3);
+        salaAtual.setExit("east", salaRecurso);
         
-        // Chegou a zero exatamente. O jogo deve decretar derrota.
-        assertThat(game.isDerrota()).isTrue();
-        assertThat(game.isVitoria()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Teste Fronteira: -1 Passos negativos em sala comum -> mantém estado de derrota")
-    void testFronteira_PassosNegativos_Derrota() {
-        Room salaComum = new Room(0, 0, false);
+        game.setCurrentRoom(salaAtual);
+        game.setPontuacaoTotal(0);
         
-        // jogo normal não deva deixar chegar a -1 (bloqueia no 0).
-        game.setEstadoParaTestes(-1, salaComum);
+        game.mover("east");
         
-        assertThat(game.isDerrota()).isTrue();
+        assertThat(game.hasRecurso()).isTrue();
+        assertThat(game.getPontuacaoTotal()).isEqualTo(100);
+        assertThat(salaRecurso.getTipo()).isEqualTo(0);
     }
 
     @Test
-    @DisplayName("Teste de Fronteira: Jogo criado com 0 passos já inicia em Derrota")
-    void testFronteira_PassosIniciaisZero_IniciaDerrotado() {
-        // Instancia o jogo na fronteira absoluta de passos
-        int[][] mapaComum = {{0, 0}};
-        Game jogoSemPassos = new Game(0, mapaComum);
+    @DisplayName("MC/DC: Entrar em Alçapão (Tipo 4) COM recurso consome o recurso e avança")
+    void testEstrutural_AlcapaoComRecurso() {
+        Room salaAtual = new Room(0, 0, 0);
+        Room salaAlcapao = new Room(1, 0, 4);
+        salaAtual.setExit("east", salaAlcapao);
         
-        // O jogo já deve nascer finalizado
-        assertThat(jogoSemPassos.isDerrota()).isTrue();
-        assertThat(jogoSemPassos.getPassosRestantes()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("Teste de Fronteira: Chegar ao professor no limite exato de passos (0 passos) garante a Vitória")
-    void testFronteira_ZeroPassos_NaSalaDoProfessor_Vitoria() {
-        Room salaDoProfessor = new Room(9, 0, true); // true = professor
-        game.setEstadoParaTestes(0, salaDoProfessor);
+        game.setCurrentRoom(salaAtual);
+        game.setTemRecursoExtra(true); 
         
-        // A vitória deve ter prioridade absoluta sobre a falta de passos
-        assertThat(game.isVitoria()).isTrue();
-        assertThat(game.isDerrota()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Teste de Fronteira: Chegar ao professor com passos sobrando garante a Vitória")
-    void testFronteira_UmPasso_NaSalaDoProfessor_Vitoria() {
-        Room salaDoProfessor = new Room(9, 0, true);
-        game.setEstadoParaTestes(1, salaDoProfessor);
+        game.mover("east");
         
-        assertThat(game.isVitoria()).isTrue();
-        assertThat(game.isDerrota()).isFalse();
+        assertThat(game.hasRecurso()).isFalse();
+        assertThat(game.getSalaAtual()).isEqualTo(salaAlcapao);
+        assertThat(salaAlcapao.getTipo()).isEqualTo(0);
     }
 
     @Test
-    @DisplayName("Teste de Fronteira: Passos negativos na sala do professor ainda mantêm a Vitória")
-    void testFronteira_PassosNegativos_NaSalaDoProfessor_Vitoria() {
-        Room salaDoProfessor = new Room(9, 0, true);
+    @DisplayName("MC/DC: Entrar em Alçapão SEM recurso no Nível 1 apenas reinicia o mapa atual")
+    void testEstrutural_AlcapaoSemRecurso_Nivel1() {
+        Room salaAtual = new Room(0, 0, 0);
+        Room salaAlcapao = new Room(1, 0, 4);
+        salaAtual.setExit("east", salaAlcapao);
         
-        // Simula uma anomalia numérica, mas garantindo que a regra da sala prevalece
-        game.setEstadoParaTestes(-1, salaDoProfessor);
+        game.setCurrentRoom(salaAtual);
+        game.setTemRecursoExtra(false);
+        game.setNivelAtual(1);
         
-        assertThat(game.isVitoria()).isTrue();
-        assertThat(game.isDerrota()).isFalse();
-    }
-
-
-
-    //---------------------------------------------------------------------------
-    //                            TESTES ESTRUTURAIS
-    //---------------------------------------------------------------------------
-
-    @Test
-    @DisplayName("Teste Estrutural: Mapeamento de salas deve cobrir ramificações Norte, Sul, Leste e Oeste")
-    void testEstrutural_CriarSalas_GeraPortasTodasDirecoes() {
-        // Matriz 3x3 força o código a validar todos os 'ifs' de vizinhança no criarSalas()
-        int[][] mapa3x3 = {
-            {0, 0, 0},
-            {0, 0, 0},
-            {0, 0, 0}
-        };
-        Game jogo3x3 = new Game(10, mapa3x3);
-        assertThat(jogo3x3.getSalaAtual()).isNotNull();
-    }
-
-    @Test
-    @DisplayName("Teste Estrutural: Fallback de spawn deve buscar em múltiplas linhas")
-    void testEstrutural_FallbackSpawn_MultiplasLinhas() {
-        // Linha inferior inteira de paredes força o loop a quebrar e subir para a linha anterior
-        int[][] mapaFallback = {
-            {0, 0},
-            {1, 1}
-        };
-        Game jogoFallback = new Game(10, mapaFallback);
-        assertThat(jogoFallback.getSalaAtual().getY()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("Teste Estrutural MC/DC isVitoria: Sala nula retorna Falso")
-    void testMCDC_Vitoria_SalaNula() {
-        game.setEstadoParaTestes(5, null);
-        assertThat(game.isVitoria()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Teste Estrutural MC/DC isVitoria: Sala válida mas não é professor (Retorna Falso)")
-    void testMCDC_Vitoria_SalaNaoProfessor() {
-        game.setEstadoParaTestes(5, new Room(0, 0, false));
-        assertThat(game.isVitoria()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Teste Estrutural MC/DC isDerrota: Com passos restantes (Curto-circuito retorna Falso)")
-    void testMCDC_Derrota_ComPassos() {
-        game.setEstadoParaTestes(1, new Room(0, 0, false));
-        assertThat(game.isDerrota()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Teste Estrutural MC/DC isDerrota: Sem passos e não é vitória (Retorna Verdadeiro)")
-    void testMCDC_Derrota_SemPassos_NaoVitoria() {
-        game.setEstadoParaTestes(0, null);
-        assertThat(game.isDerrota()).isTrue();
-    }
-
-    @Test
-    @DisplayName("Teste Estrutural MC/DC: Mapeamento de portas (True && False) - Vizinhos que são paredes")
-    void testEstrutural_CriarSalas_VizinhosSaoParedes() {
-        // A sala do centro (linha 1, coluna 1) não está em nenhuma borda do mapa.
-        // No entanto, todos os seus 4 vizinhos (Norte, Sul, Leste, Oeste) são PAREDES (1).
-        int[][] mapaComParedes = {
-            {0, 1, 0},
-            {1, 0, 1},
-            {0, 1, 0}
-        };
+        game.mover("east");
         
-        // Ao instanciar, o 'if (linha > 0)' será Verdadeiro, mas o 'grid != null' será Falso.
-        // Isso cobre todas as ramificações MC/DC das direções (linhas norte e leste inclusas).
-        Game jogoParedes = new Game(10, mapaComParedes);
-        
-        assertThat(jogoParedes.getSalaAtual()).isNotNull();
+        assertThat(game.getNivelAtual()).isEqualTo(1);
+        assertThat(game.getPassosRestantes()).isEqualTo(55); 
     }
 
     @Test
-    @DisplayName("Teste Estrutural: Loop de Fallback - Mapa inteiro de paredes (forçando l < 0)")
-    void testEstrutural_FallbackSpawn_MapaTotalmenteFechado() {
-        // Isso obriga o loop 'for' das linhas a rodar até o fim e a variável 'l' ficar menor que 0
-        // cobrindo a condição de saída natural do loop de fallback.
-        int[][] mapaFechado = {
-            {1, 1},
-            {1, 1}
-        };
+    @DisplayName("MC/DC: Entrar em Alçapão SEM recurso no Nível > 1 deduz pontos e desce de nível")
+    void testEstrutural_AlcapaoSemRecurso_NivelMaior() {
+        Room salaAtual = new Room(0, 0, 0);
+        Room salaAlcapao = new Room(1, 0, 4);
+        salaAtual.setExit("east", salaAlcapao);
         
-        Game jogoFechado = new Game(10, mapaFechado);
+        game.setCurrentRoom(salaAtual);
+        game.setTemRecursoExtra(false);
+        game.setNivelAtual(3);
+        game.setPontuacaoTotal(500);
         
-        // Como não há salaso fallback não encontra nada, e currentRoom permanece nula.
-        assertThat(jogoFechado.getSalaAtual()).isNull();
+        game.mover("east");
+        
+        assertThat(game.getNivelAtual()).isEqualTo(2); 
+        assertThat(game.getPontuacaoTotal()).isEqualTo(300); // 500 - 200
+        assertThat(game.getPassosRestantes()).isEqualTo(55); 
     }
 
+    @Test
+    @DisplayName("MC/DC: Chegar à Saída (Tipo 2) aumenta nível e concede 200 pontos")
+    void testEstrutural_PassarDeFase() {
+        Room salaAtual = new Room(0, 0, 0);
+        Room salaSaida = new Room(1, 0, 2);
+        salaAtual.setExit("east", salaSaida);
+        
+        game.setCurrentRoom(salaAtual);
+        game.setNivelAtual(1);
+        game.setPontuacaoTotal(0);
+        
+        game.mover("east");
+        
+        assertThat(game.getNivelAtual()).isEqualTo(2);
+        assertThat(game.getPontuacaoTotal()).isEqualTo(200);
+    }
+
+    @Test
+    @DisplayName("MC/DC: finalizarJogo com pontuação MAIOR que a máxima do usuário (Verdadeiro)")
+    void testEstrutural_FinalizarJogo_PontuacaoMaiorQueMaxima() {
+        when(mockUsuario.getPontuacaoMaxima()).thenReturn(50);
+        
+        game.setPontuacaoTotal(100);
+        game.setPassosRestantes(1);
+        
+        Room salaAtual = new Room(0, 0, 0);
+        Room proximaSala = new Room(0, 1, 0);
+        salaAtual.setExit("south", proximaSala);
+        game.setCurrentRoom(salaAtual);
+        
+        game.mover("south");
+        
+        verify(mockUsuario).setPontuacaoMaxima(100);
+        assertThat(game.isGameOver()).isTrue();
+    }
+
+    @Test
+    @DisplayName("MC/DC: finalizarJogo com pontuação MENOR OU IGUAL à máxima do usuário (Falso)")
+    void testEstrutural_FinalizarJogo_PontuacaoMenorOuIgualMaxima() {
+        when(mockUsuario.getPontuacaoMaxima()).thenReturn(200);
+        
+        game.setPontuacaoTotal(100);
+        game.setPassosRestantes(1);
+        
+        Room salaAtual = new Room(0, 0, 0);
+        Room proximaSala = new Room(0, 1, 0);
+        salaAtual.setExit("south", proximaSala);
+        game.setCurrentRoom(salaAtual);
+        
+        game.mover("south");
+        
+        verify(mockUsuario, never()).setPontuacaoMaxima(anyInt());
+        assertThat(game.isGameOver()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Estrutural: Cobertura do getter getMapa()")
+    void testEstrutural_GetMapa() {
+        int[][] mapa = game.getMapa();
+        assertThat(mapa).isNotNull();
+        assertThat(mapa.length).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("Estrutural: Garante que o construtor padrão utiliza o Singleton corretamente")
+    void testEstrutural_ConstrutorPadrao() {
+        // Cadastra e loga um usuário no Singleton de forma real
+        GerenciadorUsuarios ger = GerenciadorUsuarios.getInstancia();
+        ger.cadastrar("testUser", "123", "avatar");
+        ger.autenticar("testUser", "123");
+
+        // Instancia o jogo usando o construtor sem injeção (cobertura total das linhas iniciais)
+        Game jogoReal = new Game();
+        jogoReal.iniciarSessao();
+        
+        assertThat(ger.getUsuarioLogado().getSessoesJogadas()).isGreaterThanOrEqualTo(1);
+    }
+
+    // =======================================================================
+    // 3. TESTES DE UNIDADES EM CONJUNTO / INTEGRAÇÃO 
+    // =======================================================================
+
+    @Test
+    @DisplayName("Integração: Fluxo de movimento em um mapa real validando inicialização")
+    void testIntegracao_FluxoRealNoMapa() {
+        Game jogoReal = new Game(mockUsuario); 
+        
+        // Modifica atributos para checar se o iniciar zera tudo corretamente (Mutantes)
+        jogoReal.setNivelAtual(10);
+        jogoReal.setGameOver(true);
+        
+        jogoReal.iniciarSessao();
+        
+        assertThat(jogoReal.getNivelAtual()).isEqualTo(1);
+        assertThat(jogoReal.isGameOver()).isFalse();
+        assertThat(jogoReal.getPassosRestantes()).isEqualTo(55);
+        assertThat(jogoReal.getSalaAtual()).isNotNull();
+
+        Room salaInicial = jogoReal.getSalaAtual();
+        
+        // Tenta achar uma saída válida do spawn ([9][0] que geralmente vai para North ou East)
+        String direcaoValida = null;
+        if (salaInicial.getExit("north") != null) direcaoValida = "north";
+        else if (salaInicial.getExit("east") != null) direcaoValida = "east";
+
+        if (direcaoValida != null) {
+            jogoReal.mover(direcaoValida);
+            assertThat(jogoReal.getPassosRestantes()).isEqualTo(54);
+            assertThat(jogoReal.getSalaAtual()).isNotEqualTo(salaInicial);
+        }
+    }
+
+    // =======================================================================
+    // 4. TESTES BASEADOS EM PROPRIEDADE (JQWIK) 
+    // =======================================================================
+
+    @Property
+    @DisplayName("Propriedade: A pontuação nunca fica negativa após cair num alçapão")
+    void pontuacaoNuncaFicaNegativa(
+            @ForAll @IntRange(min = 0, max = 150) int pontuacaoInicial,
+            @ForAll @IntRange(min = 2, max = 5) int nivelSimulado
+    ) {
+        // Criação de mock local para evitar problemas com o ciclo de vida do Jqwik (ignora o BeforeEach)
+        Usuario localMock = mock(Usuario.class);
+        Game propGame = new Game(localMock);
+        
+        propGame.setNivelAtual(nivelSimulado);
+        propGame.setPontuacaoTotal(pontuacaoInicial);
+        propGame.setTemRecursoExtra(false);
+
+        Room salaAtual = new Room(0, 0, 0);
+        Room salaAlcapao = new Room(1, 0, 4);
+        salaAtual.setExit("north", salaAlcapao);
+        propGame.setCurrentRoom(salaAtual);
+
+        propGame.mover("north");
+
+        assertThat(propGame.getPontuacaoTotal()).isGreaterThanOrEqualTo(0);
+    }
 }
