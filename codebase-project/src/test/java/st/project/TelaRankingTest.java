@@ -56,16 +56,16 @@ public class TelaRankingTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração: A tabela deve ser preenchida com os utilizadores (Cobre o FOR)")
+    @DisplayName("Teste de Integração: A tabela deve ser preenchida com os usuários (Cobre o FOR)")
     void testPreenchimentoDaLista() {
-        // Criamos um utilizador falso para aparecer no ranking
+        // Criamos um usuário falso para aparecer no ranking
         Usuario u1 = new Usuario("jogador1", "senha", "👤");
         u1.setPontuacaoMaxima(500);
         
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
-        // O Mock agora devolve uma lista com o nosso utilizador (Isto faz o FOR rodar!)
+        //devolve uma lista  o nosso usuário 
         Mockito.when(gerMock.getUsuarios()).thenReturn(java.util.List.of(u1));
-        Mockito.when(gerMock.getUsuarioLogado()).thenReturn(u1); // Utilizador comum logado
+        Mockito.when(gerMock.getUsuarioLogado()).thenReturn(u1); // Usuário comum logado
 
         try (MockedStatic<GerenciadorUsuarios> singleton = mockStatic(GerenciadorUsuarios.class)) {
             singleton.when(GerenciadorUsuarios::getInstancia).thenReturn(gerMock);
@@ -76,7 +76,7 @@ public class TelaRankingTest {
             javax.swing.JList<String> lista = encontrarLista(vista);
             org.assertj.core.api.Assertions.assertThat(lista).isNotNull();
             
-            // Verifica se o texto formatado entrou na lista (Cobre as linhas do modelo.addElement)
+            // Verifica se o texto formatado entrou na lista 
             org.assertj.core.api.Assertions.assertThat(lista.getModel().getSize()).isEqualTo(1);
             org.assertj.core.api.Assertions.assertThat(lista.getModel().getElementAt(0))
                 .contains("👤 jogador1")
@@ -101,7 +101,7 @@ public class TelaRankingTest {
 
             VistaRanking vista = new VistaRanking();
             
-            // 1. Encontra a lista e simula o clique no utilizador "alvo"
+            // 1. Encontra a lista e simula o clique no usuário "alvo"
             javax.swing.JList<String> lista = encontrarLista(vista);
             org.assertj.core.api.Assertions.assertThat(lista).isNotNull();
             lista.setSelectedIndex(0); // Seleciona o primeiro da lista
