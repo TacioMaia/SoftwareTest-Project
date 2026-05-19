@@ -13,17 +13,15 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.mockStatic;
 
 import st.project.model.GerenciadorUsuarios;
 import st.project.model.Usuario;
 
-
-import static org.mockito.Mockito.mockStatic;
-
 public class TelaLoginTest {
 
     @Test
-    @DisplayName("Teste de Integração: Fluxo de Login com Falha (Exibe JOptionPane)")
+    @DisplayName("Teste de Domínio: Fluxo de Login com Falha")
     void testCliqueBotaoEntrarComFalha() throws Exception {
         // Mock do Gerenciador para garantir que a autenticação falha
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
@@ -54,13 +52,13 @@ public class TelaLoginTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração: Fluxo de Login com Sucesso (Inicia o Jogo)")
+    @DisplayName("Teste de Domínio: Fluxo de Login com Sucesso")
     void testCliqueBotaoEntrarComSucesso() throws Exception {
         // Agora forçamos o mock a devolver TRUE
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
         Mockito.when(gerMock.autenticar(any(), any())).thenReturn(true);
 
-        Usuario usuarioFalso = new Usuario("jogador", "senha123", "👤");
+        Usuario usuarioFalso = new Usuario("jogador", "senha123", "avatar");
         Mockito.when(gerMock.getUsuarioLogado()).thenReturn(usuarioFalso);
 
         try (MockedStatic<GerenciadorUsuarios> singleton = mockStatic(GerenciadorUsuarios.class)) {
@@ -82,7 +80,7 @@ public class TelaLoginTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração: Fluxo de Registo com Sucesso")
+    @DisplayName("Teste de Domínio: Fluxo de Registro com Sucesso")
     void testCliqueBotaoRegistarComSucesso() throws Exception {
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
         // Força o cadastro a devolver TRUE
@@ -98,7 +96,7 @@ public class TelaLoginTest {
             java.lang.reflect.Field fAvatar = VistaLogin.class.getDeclaredField("txtAvatar");
             fAvatar.setAccessible(true);
             javax.swing.JTextField txtAvatar = (javax.swing.JTextField) fAvatar.get(vistaLogin);
-            txtAvatar.setText("🤖");
+            txtAvatar.setText("avatarTeste");
             
             JButton btnRegistar = encontrarBotao(vistaLogin, "Registar Novo"); 
             assertThat(btnRegistar).as("Botão de registo não encontrado!").isNotNull();
@@ -117,10 +115,10 @@ public class TelaLoginTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração: Fluxo de Registo com Falha (Duplicado)")
+    @DisplayName("Teste de Domínio: Fluxo de Registro com Falha (Duplicado)")
     void testCliqueBotaoRegistarComFalha() throws Exception {
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
-        // Força o cadastro a falhar (FALSE)
+        // Força o cadastro a falhar 
         Mockito.when(gerMock.cadastrar(any(), any(), any())).thenReturn(false);
 
         try (MockedStatic<GerenciadorUsuarios> singleton = mockStatic(GerenciadorUsuarios.class);

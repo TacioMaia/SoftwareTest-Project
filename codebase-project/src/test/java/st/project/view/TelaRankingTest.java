@@ -9,17 +9,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.mockStatic;
 
 import st.project.model.GerenciadorUsuarios;
 import st.project.model.Usuario;
 
-
-import static org.mockito.Mockito.mockStatic;
-
 public class TelaRankingTest {
 
     @Test
-    @DisplayName("Contrato de Segurança: Botão 'Remover' oculto para utilizador comum")
+    @DisplayName("Teste de Domínio: Botão 'Remover' oculto para utilizador comum")
     void testBotaoRemover_OcultoParaUsuarioComum() {
         // Simula um utilizador comum logado
         Usuario uComum = new Usuario("joao", "123", "X");
@@ -40,7 +38,7 @@ public class TelaRankingTest {
     }
 
     @Test
-    @DisplayName("Contrato de Segurança: Botão 'Remover' visível para Admin")
+    @DisplayName("Teste de Domínio: Botão 'Remover' visível para Admin")
     void testBotaoRemover_VisivelParaAdmin() {
         // Simula o superusuário logado
         Usuario uAdmin = new Usuario("admin", "admin", "A");
@@ -61,10 +59,10 @@ public class TelaRankingTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração: A tabela deve ser preenchida com os usuários (Cobre o FOR)")
+    @DisplayName("Teste de Domínio: A tabela deve ser preenchida com os usuários")
     void testPreenchimentoDaLista() {
         // Criamos um usuário falso para aparecer no ranking
-        Usuario u1 = new Usuario("jogador1", "senha", "👤");
+        Usuario u1 = new Usuario("jogador1", "senha", "avatar");
         u1.setPontuacaoMaxima(500);
         
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
@@ -84,16 +82,16 @@ public class TelaRankingTest {
             // Verifica se o texto formatado entrou na lista 
             org.assertj.core.api.Assertions.assertThat(lista.getModel().getSize()).isEqualTo(1);
             org.assertj.core.api.Assertions.assertThat(lista.getModel().getElementAt(0))
-                .contains("👤 jogador1")
+                .contains("avatar jogador1")
                 .contains("Pontuação: 500");
         }
     }
 
     @Test
-    @DisplayName("Teste de Integração: Admin remove um utilizador com sucesso")
+    @DisplayName("Teste de Domínio: Admin remove um utilizador com sucesso")
     void testAcaoBotaoRemover() throws Exception {
         Usuario uAdmin = new Usuario("admin", "admin", "A");
-        Usuario uAlvo = new Usuario("alvo", "123", "👤");
+        Usuario uAlvo = new Usuario("alvo", "123", "avatar");
         
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
         Mockito.when(gerMock.getUsuarioLogado()).thenReturn(uAdmin);
@@ -106,12 +104,12 @@ public class TelaRankingTest {
 
             VistaRanking vista = new VistaRanking();
             
-            // 1. Encontra a lista e simula o clique no usuário "alvo"
+            // Encontra a lista e simula o clique no usuário a ser removido
             javax.swing.JList<String> lista = encontrarLista(vista);
             org.assertj.core.api.Assertions.assertThat(lista).isNotNull();
             lista.setSelectedIndex(0); // Seleciona o primeiro da lista
 
-            // 2. Encontra o botão de remover e clica nele
+            // Encontra o botão de remover e clica nele
             JButton btnRemover = encontrarBotao(vista, "Remover Utilizador Selecionado");
             org.assertj.core.api.Assertions.assertThat(btnRemover).isNotNull();
             
@@ -119,7 +117,7 @@ public class TelaRankingTest {
                 al.actionPerformed(new java.awt.event.ActionEvent(btnRemover, java.awt.event.ActionEvent.ACTION_PERFORMED, "click"));
             }
 
-            // 3. Verifica se o Gerenciador foi chamado para remover exatamente o usuário
+            // Verifica se o Gerenciador foi chamado para remover exatamente o usuário
             Mockito.verify(gerMock).removerUsuario("alvo");
 
             
@@ -133,7 +131,7 @@ public class TelaRankingTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração: Admin clica em Remover sem selecionar ninguém na lista")
+    @DisplayName("Teste de Fronteira: Admin clica em Remover sem selecionar ninguém na lista")
     void testAcaoBotaoRemover_SemSelecao() throws Exception {
         Usuario uAdmin = new Usuario("admin", "admin", "A");
         GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);

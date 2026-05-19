@@ -12,15 +12,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import st.project.view.VistaJogo;
-import st.project.view.VistaLogin;
-import st.project.model.Game;
-
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import st.project.model.Game;
+import st.project.view.VistaJogo;
+import st.project.view.VistaLogin;
 
 public class JogoControllerTest {
 
@@ -45,7 +44,7 @@ public class JogoControllerTest {
     }
 
     @Test
-    @DisplayName("Teste de Interação: Iniciar o controlador deve configurar a vista e o modelo")
+    @DisplayName("Teste Estrutural: Iniciar o controlador deve configurar a vista e o modelo")
     void testIniciarControlador() {
 
         controller.iniciar();
@@ -67,7 +66,7 @@ public class JogoControllerTest {
 
 
     @Test
-    @DisplayName("Teste de Mapeamento: Teclas de movimento devem acionar o modelo")
+    @DisplayName("Teste de Domínio: Teclas de movimento devem acionar o modelo")
     void testMapeamentoDeTeclas() throws Exception {
 when(modelMock.isGameOver()).thenReturn(false);
 
@@ -99,12 +98,12 @@ when(modelMock.isGameOver()).thenReturn(false);
     }
 
     @Test
-    @DisplayName("Teste de Integração (MockStatic): Game Over e o utilizador escolhe SIM (Jogar de novo)")
+    @DisplayName("Teste Estrutural: Game Over e o utilizador escolhe SIM (Jogar de novo)")
     void testGameOver_EscolheJogarNovamente() throws Exception {
         // Prepara o modelo para dizer que o jogo acabou após o próximo movimento
         when(modelMock.isGameOver()).thenReturn(true);
 
-        // 2. Intercepta o JOptionPane do Java Swing
+        // Intercepta o JOptionPane do Java Swing
         try (MockedStatic<JOptionPane> optionPaneMock = mockStatic(JOptionPane.class)) {
             
             // Fingimos que o usuário clicou em "SIM" quando a caixa de diálogo apareceu
@@ -112,11 +111,10 @@ when(modelMock.isGameOver()).thenReturn(false);
                     any(), any(), any(), eq(JOptionPane.YES_NO_OPTION)
             )).thenReturn(JOptionPane.YES_OPTION);
 
-            // Pressiona 'S' (Baixo)
             metodoProcessar.invoke(controller, KeyEvent.VK_S);
 
             // Verificações do caminho "SIM"
-            verify(modelMock, times(1)).mover("south"); // Registou o movimento
+            verify(modelMock, times(1)).mover("south"); // Registrou o movimento
             verify(viewMock, times(1)).mostrarMensagemFim(); // Mostrou o alerta de fim
             verify(modelMock, times(1)).iniciarSessao(); 
             //Atualiza a tela novamente para mostrar o novo estado do jogo
@@ -125,7 +123,7 @@ when(modelMock.isGameOver()).thenReturn(false);
     }
 
     @Test
-    @DisplayName("Teste de Integração (MockStatic): Game Over e o utilizador escolhe NÃO (Sair)")
+    @DisplayName("Teste Estrutural: Game Over e o utilizador escolhe NÃO (Sair)")
     void testGameOver_EscolheSair() throws Exception {
         when(modelMock.isGameOver()).thenReturn(true);
 
@@ -136,8 +134,8 @@ when(modelMock.isGameOver()).thenReturn(false);
                     any(), any(), any(), eq(JOptionPane.YES_NO_OPTION)
             )).thenReturn(JOptionPane.NO_OPTION);
 
-            // Evitamos que a nova VistaLogin aberta bloqueie o teste (fecha instantaneamente)
-            // Este é um Timer de segurança apenas para a nova janela que é instanciada
+            // Fecha a tela de login instantaneamente para evitar que o teste trave
+            //  Timer de segurança para a nova janela que é instanciada
             javax.swing.Timer timer = new javax.swing.Timer(100, e -> {
                 for (java.awt.Window w : java.awt.Window.getWindows()) {
                     if (w instanceof VistaLogin) {
@@ -148,17 +146,17 @@ when(modelMock.isGameOver()).thenReturn(false);
             timer.setRepeats(false);
             timer.start();
 
-            // Ação: Pressiona 'D' (Direita)
+            // Pressiona 'D' (Direita)
             metodoProcessar.invoke(controller, KeyEvent.VK_D);
 
             // Verificações do caminho "NÃO"
             verify(modelMock, times(1)).mover("east");
             verify(viewMock, times(1)).mostrarMensagemFim();
             
-            // Como escolheu NÃO, a vista do jogo deve ter sido descartada (dispose)
+            // Como escolheu NÃO, a vista do jogo deve ter sido descartada
             verify(viewMock, times(1)).dispose();
             
-            // Garantimos que NÃO tentou reiniciar a sessão
+            // Garantimos que não tentou reiniciar a sessão
             verify(modelMock, times(0)).iniciarSessao();
         }
     }
