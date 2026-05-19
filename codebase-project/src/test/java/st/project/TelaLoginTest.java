@@ -31,7 +31,7 @@ public class TelaLoginTest {
 
             VistaLogin vistaLogin = new VistaLogin();
 
-            // Interagimos diretamente com os campos (Adapte os nomes dos campos se necessário)
+            // Interagimos diretamente com os campos 
             JTextField campoLogin = encontrarCampoTexto(vistaLogin, "login");
             if (campoLogin != null) campoLogin.setText("usuarioInexistente");
 
@@ -41,7 +41,7 @@ public class TelaLoginTest {
             // Simula o clique do utilizador
             if (btnEntrar != null) btnEntrar.doClick();
 
-            // Verifica se a tela tentou mostrar o aviso de erro (A caixa não aparece de verdade graças ao Mock)
+            // Verifica se a tela tentou mostrar o aviso de erro 
           optionPaneMock.verify(() -> JOptionPane.showMessageDialog(
             Mockito.any(java.awt.Component.class), 
             Mockito.eq("Credenciais inválidas!")), Mockito.atLeastOnce());
@@ -70,9 +70,8 @@ public class TelaLoginTest {
             for (java.awt.event.ActionListener al : btnEntrar.getActionListeners()) {
                 al.actionPerformed(new java.awt.event.ActionEvent(btnEntrar, java.awt.event.ActionEvent.ACTION_PERFORMED, "click"));
             }
-
-            // Se o login teve sucesso, a linha 'dispose()' deve ter sido chamada.
-            // O isDisplayable() verifica se a janela foi removida da memória.
+          
+            // verifica se a janela foi removida da memória.
             assertThat(vistaLogin.isDisplayable()).isFalse();
         }
     }
@@ -126,7 +125,6 @@ public class TelaLoginTest {
 
             VistaLogin vistaLogin = new VistaLogin();
             
-            // ATENÇÃO: Mesma coisa aqui, verifique o texto do botão
             JButton btnRegistar = encontrarBotao(vistaLogin, "Registar Novo");
             assertThat(btnRegistar).isNotNull();
 
@@ -146,7 +144,6 @@ public class TelaLoginTest {
 
 
     // --- MÉTODOS DE BUSCA DE COMPONENTES ---
-    // (Procuram nos componentes da tela sem precisarmos saber os nomes das variáveis)
     private JButton encontrarBotao(Component comp, String texto) {
         if (comp instanceof JButton && ((JButton) comp).getText().equalsIgnoreCase(texto)) return (JButton) comp;
         if (comp instanceof java.awt.Container) {
