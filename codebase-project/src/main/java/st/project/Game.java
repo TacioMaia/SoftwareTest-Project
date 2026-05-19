@@ -12,7 +12,7 @@ public class Game {
     private int[][] mapa;
     private boolean gameOver;
 
-    // Dependência injetada opcionalmente para facilitar os testes unitários
+    // Dependência injetada para facilitar os testes unitários
     private Usuario usuarioInjetado;
 
     public Game() {
