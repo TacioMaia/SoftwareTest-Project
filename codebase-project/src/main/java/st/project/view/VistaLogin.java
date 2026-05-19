@@ -1,6 +1,11 @@
-package st.project;
+package st.project.view;
 
 import javax.swing.*;
+
+import st.project.model.GerenciadorUsuarios;
+import st.project.controller.JogoController;
+import st.project.model.Game;
+
 import java.awt.*;
 
 public class VistaLogin extends JFrame {

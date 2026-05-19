@@ -1,6 +1,10 @@
-package st.project;
+package st.project.view;
 
 import javax.swing.*;
+
+import st.project.model.GerenciadorUsuarios;
+import st.project.model.Usuario;
+
 import java.awt.*;
 import java.util.List;
 

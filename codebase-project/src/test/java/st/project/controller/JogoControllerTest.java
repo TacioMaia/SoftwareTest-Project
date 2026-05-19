@@ -1,4 +1,4 @@
-package st.project;
+package st.project.controller;
 
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
@@ -12,6 +12,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import st.project.view.VistaJogo;
+import st.project.view.VistaLogin;
+import st.project.model.Game;
+
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

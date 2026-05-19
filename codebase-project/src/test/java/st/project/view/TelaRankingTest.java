@@ -1,4 +1,4 @@
-package st.project;
+package st.project.view;
 
 import java.awt.Component;
 
@@ -9,6 +9,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import st.project.model.GerenciadorUsuarios;
+import st.project.model.Usuario;
+
+
 import static org.mockito.Mockito.mockStatic;
 
 public class TelaRankingTest {

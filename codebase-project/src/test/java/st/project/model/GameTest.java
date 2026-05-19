@@ -1,7 +1,8 @@
-package st.project;
+package st.project.model;
 
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.IntRange;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +31,7 @@ class GameTest {
 
     //Verifica que mover para uma direção válida com sala disponível consome exatamente 1 passo e troca a sala atual
     @Test
-    @DisplayName("DM01 – Movimento para sala comum: consome 1 passo e muda a sala")
+    @DisplayName("DM01 - mover para sala livre consome um passo e atualiza a posição")
     void testDM01_MovimentoParaSalaComum() {
         Room origem = new Room(0, 0, 0);
         Room destino = new Room(1, 0, 0);
@@ -47,7 +48,7 @@ class GameTest {
 
     //Verifica que tentar mover para uma direção sem saída não faz nada. não consome passo e nem muda de sala
     @Test
-    @DisplayName("DM02 – Movimento para parede (sem saída): não consome passos e não muda de lugar")
+    @DisplayName("DM02 - mover contra parede não altera posição nem passos")
     void testDM02_MovimentoParaParede() {
         Room salaIsolada = new Room(0, 0, 0);
         game.setPassosRestantes(10);
@@ -60,7 +61,7 @@ class GameTest {
     }
     // Verifica se ta tudo certo com a coleta do recurso, se soma +100 pontos, ativa a flag HasRecurso = verdadeira e muda o tipo de sala para 0 (sala comum)
     @Test
-    @DisplayName("DM03 – Coletar recurso (Tipo 3): ganha 100 pontos, ativa flag e limpa a sala")
+    @DisplayName("DM03 - entrar em sala com o livro soma 100 pontos e ativa o recurso")
     void testDM03_ColetarRecurso() {
         Room origem = new Room(0, 0, 0);
         Room salaRecurso = new Room(1, 0, 3);
@@ -78,7 +79,7 @@ class GameTest {
 
     // Verifica o caminho do alçapão quando o jogador tem o recurso, consegue atravessar, o HasRecurso fica falso e muda o tipo de sala para 0 (sala comum)
     @Test
-    @DisplayName("DM04 – Alçapão com recurso: transpõe, consome recurso e não perde pontos")
+    @DisplayName("DM04 - atravessar alçapão com cristal consome o recurso sem penalidade")
     void testDM04_AlcapaoComRecurso() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -98,7 +99,7 @@ class GameTest {
 
     // Verifica o que acontece se cair no alçapão sem recurso nos niveis maiores que 1. perde 200 pontos e desce para o nivel anterior
     @Test
-    @DisplayName("DM05 – Alçapão sem recurso (Nível > 1): desce de nível, perde 200 pts e reseta mapa")
+    @DisplayName("DM05 - cair no alçapão sem cristal no nível 3 desconta nível e pontuação")
     void testDM05_AlcapaoSemRecursoNivelMaior() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -118,7 +119,7 @@ class GameTest {
 
     // Verifica o que acontece se cair no alçapão sem recurso no nivel 1. não aplica os -200 pontos e permanece no nivel 1
     @Test
-    @DisplayName("DM06 – Alçapão sem recurso (Nível 1): permanece no nível 1 e não perde pontos")
+    @DisplayName("DM06 - cair no alçapão sem cristal no nível 1 não aplica penalidade")
     void testDM06_AlcapaoSemRecursoNivel1() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -138,7 +139,7 @@ class GameTest {
 
     // Verifica que chegar na sala da saída avança o nível 1 vai para 2, da 200 pontos, e recarrega o mapa (passos voltam a 55 no novo nivel)
     @Test
-    @DisplayName("DM07 – Alcançar a saída (Tipo 2): avança nível, concede 200 pontos e reseta mapa")
+    @DisplayName("DM07 - alcançar a saída avança o nível e concede 200 pontos")
     void testDM07_AlcancarSaida() {
         Room origem = new Room(0, 0, 0);
         Room salaSaida = new Room(1, 0, 2);
@@ -157,7 +158,7 @@ class GameTest {
 
     // Verifica que o jogo não quebra nem consome passo quando recebe entradas anormais
     @Test
-    @DisplayName("DM08 – Direções inválidas: Mover para direção nula, anômala ou sem sala é ignorado")
+    @DisplayName("DM08 - direção nula, inválida ou sem saída é ignorada")
     void testDM08_DirecoesInvalidasNaoAlteramEstado() {
         Room origem = new Room(0, 0, 0);
         game.setCurrentRoom(origem);
@@ -170,14 +171,14 @@ class GameTest {
         assertThat(game.getPassosRestantes()).isEqualTo(10);
         assertThat(game.getSalaAtual()).isEqualTo(origem);
 
-        // Contrato extra: Sala atual ser nula (Garante segurança do sistema - MC/DC)
+        // Contrato Sala atual ser nula 
         game.setCurrentRoom(null);
         game.mover("north"); // Não deve lançar NullPointerException
     }
 
     // Verifica que iniciarSessao faz o reset certo. nível volta a 1, pontuação fica 0, gameOver vira false. Também verifica via verify(mockUsuario) que o contador de sessões do usuário foi incrementado
     @Test
-    @DisplayName("DM09 – Inicialização de sessão: Reseta estado e contabiliza a jogada")
+    @DisplayName("DM09 - iniciar sessão reseta o estado e registra a sessão no usuário")
     void testDM09_InicializacaoDeSessaoLimpaEstado() {
         game.setNivelAtual(10);
         game.setPontuacaoTotal(999);
@@ -190,12 +191,12 @@ class GameTest {
         assertThat(game.isGameOver()).isFalse();
         
         // Verifica se contabilizou a sessão no usuário original
-        verify(mockUsuario, atLeastOnce()).incrementarSessao(); // um usuario real ia incrementar sem dar pra conferir, por isso usei mock
+        verify(mockUsuario, atLeastOnce()).incrementarSessao(); // um usuario real ia incrementar sem dar pra conferir, demorar, por isso usei mock
     }
 
     // Verifica se as 4 direções estão levando pras salas vizinhas certas.
     @Test
-    @DisplayName("DM10 – Rosa dos ventos: As 4 direções cardinais movem para os vizinhos corretos")
+    @DisplayName("DM10 - as quatro direções levam para as salas vizinhas corretas")
     void testDM10_QuatroDirecoesCardinais() {
         Room centro = new Room(5, 5, 0);
         Room norte  = new Room(5, 4, 0);
@@ -231,7 +232,7 @@ class GameTest {
 
     // Verifica que com 2 passos, depois de mover, o jogo fica com 1 passo e não termina
     @Test
-    @DisplayName("FR01 – Quase Game Over (Fronteira superior de passos): 2 passos -> 1 passo (Jogo continua)")
+    @DisplayName("FR01 - com dois passos restantes o jogo continua após mover")
     void testFR01_FronteiraPassosNaoZera() {
         Room origem = new Room(0, 0, 0);
         Room destino = new Room(1, 0, 0);
@@ -248,7 +249,7 @@ class GameTest {
 
     // Verifica que com exatamente 1 passo, após mover, os passos chegam a 0 e o isGameOver() vira true
     @Test
-    @DisplayName("FR02 – Game Over Exato (Fronteira inferior de passos): 1 passo -> 0 passos (Gera Game Over)")
+    @DisplayName("FR02 - com um passo restante o jogo termina após mover")
     void testFR02_FronteiraPassosZeradosGeraGameOver() {
         Room salaAtual = new Room(0, 0, 0);
         Room proximaSala = new Room(0, 1, 0);
@@ -265,7 +266,7 @@ class GameTest {
 
     // Verifica que cair no alçapão com apenas 50 pontos não resulta em pontuação negativa
     @Test
-    @DisplayName("FR03 – Pontuação inferior à penalidade: 50 pts ao cair no alçapão fica com 0 (Não negativo)")
+    @DisplayName("FR03 - pontuação menor que 200 ao cair no alçapão resulta em zero")
     void testFR03_FronteiraPunicaoMenorQue200() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -283,7 +284,7 @@ class GameTest {
 
     // Verifica o caso exato onde a punição é igual à pontuação: 200 - 200 = 0
     @Test
-    @DisplayName("FR04 – Pontuação exata da penalidade: 200 pts ao cair no alçapão vai a exatamente 0")
+    @DisplayName("FR04 - pontuação igual a 200 ao cair no alçapão resulta em zero")
     void testFR04_FronteiraPunicaoExata200() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -301,7 +302,7 @@ class GameTest {
 
     //Verifica que com 201 pontos o resultado é exatamente 1, após a punição do alçapão
     @Test
-    @DisplayName("FR05 – Pontuação logo acima da penalidade: 201 pts ao cair no alçapão fica com exatamente 1")
+    @DisplayName("FR05 - pontuação igual a 201 ao cair no alçapão resulta em um")
     void testFR05_FronteiraPunicaoAcimaDe200() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -319,7 +320,7 @@ class GameTest {
 
     // Verifica se o nivel 1 permanece 1 se cair no alçapão
     @Test
-    @DisplayName("FR06 – Limite inferior de Nível: Nível 1 permanece 1 ao cair no alçapão sem recurso")
+    @DisplayName("FR06 - nível mínimo não é ultrapassado ao cair no alçapão sem recurso")
     void testFR06_FronteiraNivelMinimo() {
         Room origem = new Room(0, 0, 0);
         Room salaAlcapao = new Room(1, 0, 4);
@@ -339,7 +340,7 @@ class GameTest {
 
     // Simula o jogo acabando com 600 pontos quando o recorde do usuário era 50, Verifica que o recorde foi atualizado.
     @Test
-    @DisplayName("FR07 – Superando o Recorde: Nova máxima atualiza a pontuação do usuário")
+    @DisplayName("FR07 - pontuação acima do recorde atualiza a máxima do usuário")
     void testFR07_FronteiraRecordeSuperado() {
         // Simula que o usuário tinha 50 de recorde
         when(mockUsuario.getPontuacaoMaxima()).thenReturn(50); // Stub, progama o mock para responder o valor
@@ -361,7 +362,7 @@ class GameTest {
 
     // Simula o jogo acabando com 100 pontos quando o recorde era 900, Verifica que o metodo de atualizar o recorde não foi chamado.
     @Test
-    @DisplayName("FR08 – Abaixo do Recorde: Pontuação final menor que o recorde não atualiza o usuário")
+    @DisplayName("FR08 - pontuação abaixo do recorde não altera a máxima do usuário")
     void testFR08_FronteiraRecordeNaoSuperado() {
         // Simula que o usuário tem um recorde altíssimo (900)
         when(mockUsuario.getPontuacaoMaxima()).thenReturn(900);
@@ -387,7 +388,7 @@ class GameTest {
 
     // Verifica se bloqueia o movimento quando o gameOver é verdadeiro
     @Test
-    @DisplayName("ST01 – MC/DC: Movimento bloqueado quando gameOver = true")
+    @DisplayName("ST01 - movimento é bloqueado quando o jogo já está encerrado")
     void testST01_GameOverImpedeMovimento() {
         game.setGameOver(true);
         Room salaAnterior = game.getSalaAtual();
@@ -400,7 +401,7 @@ class GameTest {
 
     // verifica a estrutura da matriz gerada. Garante que a geração aleatória sempre produz um mapa de tamanho correto
     @Test
-    @DisplayName("ST02 – Estrutural: O Mapa gerado e retornado é sempre de tamanho 10x10")
+    @DisplayName("ST02 - mapa gerado sempre tem dimensão 10 por 10")
     void testST02_MatrizDoMapa() {
         // Garante a cobertura do getter getMapa()
         int[][] mapa = game.getMapa();
@@ -411,7 +412,7 @@ class GameTest {
 
     // Anda por toda a matriz contando tipos 3 e 4, Verifica se só tem 1 alçapão e 1 recurso
     @Test
-    @DisplayName("ST03 – Mutação/Integridade: O mapa aleatório gera exatamente 1 Recurso (3) e 1 Alçapão (4)")
+    @DisplayName("ST03 - mapa sempre contém exatamente um cristal e um alçapão")
     void testST03_MapaGeraElementosAleatoriosCorretos() {
         int countRecurso = 0;
         int countAlcapao = 0;
@@ -429,7 +430,7 @@ class GameTest {
 
     // Confirma que o mapa base sempre tem uma saída e que é só uma
     @Test
-    @DisplayName("ST04 – Mutação/Integridade: O mapa aleatório gera exatamente 1 Saída (2)")
+    @DisplayName("ST04 - mapa sempre contém exatamente uma saída")
     void testST04_MapaGeraUmaSaida() {
         int countSaida = 0;
         
@@ -444,7 +445,7 @@ class GameTest {
 
     // Verifica quando o UsuarioInjetado é null na criação do Game, Game sem injeção de dependencia. Verifica se tá na sessão do usuario correto
     @Test
-    @DisplayName("ST05 – MC/DC: O construtor padrão aciona corretamente o fallback para o Singleton")
+    @DisplayName("ST05 - construtor sem injeção usa o singleton para acessar o usuário")
     void testST05_ConstrutorPadraoUsaSingleton() {
         GerenciadorUsuarios ger = GerenciadorUsuarios.getInstancia();
         ger.cadastrar("testUser", "123", "avatar");
@@ -458,12 +459,12 @@ class GameTest {
     }
     
     // =========================================================================
-    // TESTES DE INTEGRAÇÃO 
+    // AQUI ANTES TINHA UM TESTE QUE FOI CONSIDERADO DE INTEGRAÇÃO, MAS APÓS CORREÇÃO CHEGAMOS A CONCLUSÃO QUE É DE DOMINIO
     // =========================================================================
 
     // Cria um Game e inicia a sessão, testa o nivel 1, game over falso, 55 passos, sala não nula, faz movimento e ve se diminui os passos e muda a sala
     @Test
-    @DisplayName("IN01 – Fluxo real de jogo navega corretamente sem mocks de salas")
+    @DisplayName("DM11 - sessão iniciada com mapa real produz estado inicial válido")
     void testIN01_FluxoRealNoMapa() {
         Game jogoReal = new Game(mockUsuario); 
         
@@ -495,9 +496,9 @@ class GameTest {
     // TESTES BASEADOS EM PROPRIEDADE (JQWIK)
     // =========================================================================
 
-    // Gera milhares de combinações de pontuação inicial e niveis diferentes. aplicando em todas a queda no alçapão sem recurso e verifica se o resultado é sempre >=0
+    // Gera várias de combinações de pontuação inicial e niveis diferentes. aplicando em todas a queda no alçapão sem recurso e verifica se o resultado é sempre >=0
     @Property
-    @DisplayName("PROP01 – A matemática do alçapão jamais permite pontuação negativa")
+    @DisplayName("PROP01 - pontuação nunca fica negativa após cair no alçapão")
     void pontuacaoNuncaFicaNegativa(
             @ForAll @IntRange(min = 0, max = 10000) int pontuacaoInicial,
             @ForAll @IntRange(min = 2, max = 5) int nivelSimulado
@@ -522,7 +523,7 @@ class GameTest {
 
     // Gera combinações de varios niveis iniciais e quedas seguidas. Testando que o nivel final é sempre >= 1
     @Property
-    @DisplayName("PROP02 – O nível do jogador nunca pode ser inferior a 1 (Invariante)")
+    @DisplayName("PROP02 - nível nunca fica abaixo de um após múltiplas quedas")
     void nivelNuncaFicaMenorQueUm(
             @ForAll @IntRange(min = 1, max = 50) int nivelInicial,
             @ForAll @IntRange(min = 1, max = 100) int qtdQuedas
@@ -548,7 +549,7 @@ class GameTest {
 
     // Gera os passos iniciais de 1 a 100 e faz vários movimentos. testando que os passos nunca ficam negativos
     @Property
-    @DisplayName("PROP03 – Os passos restantes nunca ficam negativos (Invariante)")
+    @DisplayName("PROP03 - passos restantes nunca ficam negativos após muitos movimentos")
     void passosNuncaFicamNegativos(
             @ForAll @IntRange(min = 1, max = 100) int passosIniciais,
             @ForAll @IntRange(min = 1, max = 200) int qtdMovimentos

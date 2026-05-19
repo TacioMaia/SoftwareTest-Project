@@ -1,4 +1,4 @@
-package st.project;
+package st.project.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

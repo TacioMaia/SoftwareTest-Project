@@ -1,9 +1,13 @@
-package st.project;
+package st.project.controller;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JOptionPane;
+
+import st.project.model.Game;
+import st.project.view.VistaJogo;
+import st.project.view.VistaLogin;
 
 public class JogoController {
     private Game model;

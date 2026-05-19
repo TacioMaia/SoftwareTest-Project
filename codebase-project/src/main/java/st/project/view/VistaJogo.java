@@ -1,4 +1,4 @@
-package st.project;
+package st.project.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +16,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+
+import st.project.model.Room;
+import st.project.model.Game;
 
 public class VistaJogo extends JFrame {
     private JLabel labelStatus;

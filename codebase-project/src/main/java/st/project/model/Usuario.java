@@ -1,4 +1,4 @@
-package st.project;
+package st.project.model;
 
 public class Usuario {
     private String login;

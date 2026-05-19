@@ -1,4 +1,4 @@
-package st.project;
+package st.project.model;
 
 import java.util.Random;
 
@@ -159,8 +159,12 @@ public class Game {
                 } else {
                     // Punição por cair no alçapão sem recurso
                     if (nivelAtual > 1) {
+                        // INVARIANTE: pontuação nunca pode ser negativa, independente da penalidade aplicada.
+                        // Coberto por teste de propriedade: GameTest#PROP01
                         pontuacaoTotal = Math.max(0, pontuacaoTotal - 200);
                     }
+                    // INVARIANTE: nível mínimo é sempre 1, independente de quantas quedas ocorrerem.
+                    // Coberto por teste de propriedade: GameTest#PROP02
                     nivelAtual = Math.max(1, nivelAtual - 1);
                     carregarNivel();
                     return; 
@@ -179,6 +183,8 @@ public class Game {
         }
     }
 
+    // INVARIANTE: os passos travam em 0 ao acionar o game over, nunca ficando negativos.
+    // Coberto por teste de propriedade: GameTest#PROP03
     private void finalizarJogo() {
         gameOver = true;
         Usuario u = getUsuarioAtivo();
@@ -195,7 +201,7 @@ public class Game {
     public int[][] getMapa() { return mapa; }
     public boolean isGameOver() { return gameOver; }
 
-    // Métodos package-private para injeção de estado em testes unitários
+    // Métodos para injeção de estado em testes 
     void setCurrentRoom(Room room) { this.currentRoom = room; }
     void setPassosRestantes(int passos) { this.passosRestantes = passos; }
     void setNivelAtual(int nivel) { this.nivelAtual = nivel; }

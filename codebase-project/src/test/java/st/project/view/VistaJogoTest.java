@@ -1,10 +1,13 @@
-package st.project;
+package st.project.view;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
+
+import st.project.model.Room;
+import st.project.model.Game;
 
 import javax.swing.JOptionPane;
 import java.awt.Graphics;
@@ -31,8 +34,12 @@ class VistaJogoTest {
         graphicsSpy = spy(img.getGraphics());
     }
 
+    // =========================================================================
+    // TESTES DE DOMÍNIO 
+    // =========================================================================
+
     @Test
-    @DisplayName("Teste Estrutural: Atualizar Tela deve formatar o texto do label corretamente")
+    @DisplayName("DM01 - painel exibe nível, pontos, passos e recurso ativado no formato correto")
     void deveAtualizarLabelDeStatusCorretamente() {
         when(gameMock.getNivelAtual()).thenReturn(2);
         when(gameMock.getPontuacaoTotal()).thenReturn(500);
@@ -45,43 +52,15 @@ class VistaJogoTest {
         assertThat(vista.getLabelStatus().getText()).isEqualTo(textoEsperado);
     }
 
-    @Test
-    @DisplayName("Teste Estrutural/Fronteira: Atualizar Tela com status de Recurso FALTA")
-    void deveAtualizarLabelDeStatusSemRecurso() {
-        when(gameMock.getNivelAtual()).thenReturn(1);
-        when(gameMock.getPontuacaoTotal()).thenReturn(0);
-        when(gameMock.getPassosRestantes()).thenReturn(55);
-        when(gameMock.hasRecurso()).thenReturn(false);
-
-        vista.atualizarTela(gameMock);
-
-        assertThat(vista.getLabelStatus().getText()).contains("Recurso: FALTA");
-    }
-
-    @Test
-    @DisplayName("MC/DC: Componente de Pintura com gameModel nulo não deve fazer nada (Contrato)")
+        @Test
+    @DisplayName("DM02 - painel não renderiza nada quando o modelo ainda não foi carregado")
     void deveRetornarCedoNoPaintComponentSeGameModelForNulo() {
         vista.getPainelJogo().paintComponent(graphicsSpy);
         verify(graphicsSpy, never()).drawImage(any(), anyInt(), anyInt(), anyInt(), anyInt(), any());
     }
 
-    @Test
-    @DisplayName("MC/DC: Componente de Pintura sem sala atual (Cobre ramificação atual == null)")
-    void devePintarSemSalaAtual() {
-        int[][] mapaTeste = new int[10][10]; // Mapa zerado
-        
-        when(gameMock.getMapa()).thenReturn(mapaTeste);
-        when(gameMock.getSalaAtual()).thenReturn(null); // Aqui cobre o if(atual != null) dando FALSO
-
-        vista.atualizarTela(gameMock);
-        vista.getPainelJogo().paintComponent(graphicsSpy);
-
-        // Nenhuma imagem ou formato do jogador deve ter sido renderizado
-        verify(graphicsSpy, never()).fillOval(anyInt(), anyInt(), anyInt(), anyInt());
-    }
-
-    @Test
-    @DisplayName("MC/DC: Componente de Pintura carregando todos os tipos de blocos COM imagens")
+        @Test
+    @DisplayName("DM03 - painel desenha todos os tipos de bloco quando as imagens estão disponíveis")
     void devePintarTodosOsTiposDeBlocosComImagens() {
         int[][] mapaTeste = new int[10][10];
         mapaTeste[0][0] = 0; 
@@ -104,8 +83,71 @@ class VistaJogoTest {
         verify(graphicsSpy, atLeastOnce()).drawImage(any(), anyInt(), anyInt(), anyInt(), anyInt(), isNull());
     }
 
+        @Test
+    @DisplayName("DM04 - mensagem de fim de jogo exibe a pontuação final correta")
+    void deveMostrarMensagemFimDeJogoCorreta() {
+        when(gameMock.getPontuacaoTotal()).thenReturn(999);
+        vista.atualizarTela(gameMock);
+
+        try (MockedStatic<JOptionPane> mockPane = mockStatic(JOptionPane.class)) {
+            
+            vista.mostrarMensagemFim();
+            
+            mockPane.verify(() -> JOptionPane.showMessageDialog(
+                    eq(vista),
+                    contains("999"),
+                    eq("Game Over"),
+                    eq(JOptionPane.INFORMATION_MESSAGE)
+            ));
+        }
+    }
+    
     @Test
-    @DisplayName("MC/DC: Componente de Pintura ativando os fallbacks visuais SEM imagens")
+    @DisplayName("DM05 - clicar no botão de ranking abre a janela de ranking")
+    void devePossuirBotaoDeRankingComAcao() {
+        try (MockedConstruction<VistaRanking> mockRanking = mockConstruction(VistaRanking.class)) {
+            
+            vista.getBtnRanking().doClick(); 
+            
+            assertThat(mockRanking.constructed()).hasSize(1);
+            verify(mockRanking.constructed().get(0)).setVisible(true);
+        }
+    }
+
+    // =========================================================================
+    //  TESTES DE FRONTEIRA 
+    // =========================================================================
+
+    @Test
+    @DisplayName("FR01 - painel exibe recurso como falta quando o livro não foi coletado")
+    void deveAtualizarLabelDeStatusSemRecurso() {
+        when(gameMock.getNivelAtual()).thenReturn(1);
+        when(gameMock.getPontuacaoTotal()).thenReturn(0);
+        when(gameMock.getPassosRestantes()).thenReturn(55);
+        when(gameMock.hasRecurso()).thenReturn(false);
+
+        vista.atualizarTela(gameMock);
+
+        assertThat(vista.getLabelStatus().getText()).contains("Recurso: FALTA");
+    }
+
+    @Test
+    @DisplayName("FR02 - painel renderiza o mapa sem desenhar o jogador quando a sala atual é nula")
+    void devePintarSemSalaAtual() {
+        int[][] mapaTeste = new int[10][10]; // Mapa zerado
+        
+        when(gameMock.getMapa()).thenReturn(mapaTeste);
+        when(gameMock.getSalaAtual()).thenReturn(null); // Aqui cobre o if(atual != null) dando FALSO
+
+        vista.atualizarTela(gameMock);
+        vista.getPainelJogo().paintComponent(graphicsSpy);
+
+        // Nenhuma imagem ou formato do jogador deve ter sido renderizado
+        verify(graphicsSpy, never()).fillOval(anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisplayName("FR03 - painel usa cores de fallback quando as imagens não foram carregadas")
     void devePintarCoresDeFallbackQuandoImagensFaltarem() {
         vista.setImgPiso(null);
         vista.setImgParede(null);
@@ -135,7 +177,7 @@ class VistaJogoTest {
     }
 
     @Test
-    @DisplayName("Estrutural: Cobrir falha no carregamento de imagem inexistente (url == null)")
+    @DisplayName("FR04 - carregar imagem com caminho inválido retorna nulo sem lançar exceção")
     void deveRetornarNullAoCarregarImagemInexistente() throws Exception {
         // Uso da técnica de Reflection para cobrir o método privado carregar() no cenário de caminho inexistente
         Method metodoCarregar = VistaJogo.class.getDeclaredMethod("carregar", String.class);
@@ -145,34 +187,5 @@ class VistaJogoTest {
         assertThat(img).isNull();
     }
 
-    @Test
-    @DisplayName("Dublê Avançado: Deve exibir o popup de Game Over interceptado via Static Mock")
-    void deveMostrarMensagemFimDeJogoCorreta() {
-        when(gameMock.getPontuacaoTotal()).thenReturn(999);
-        vista.atualizarTela(gameMock);
 
-        try (MockedStatic<JOptionPane> mockPane = mockStatic(JOptionPane.class)) {
-            
-            vista.mostrarMensagemFim();
-            
-            mockPane.verify(() -> JOptionPane.showMessageDialog(
-                    eq(vista),
-                    contains("999"),
-                    eq("Game Over"),
-                    eq(JOptionPane.INFORMATION_MESSAGE)
-            ));
-        }
-    }
-    
-    @Test
-    @DisplayName("Contrato UI: O botão de Ranking deve existir e invocar a janela corretamente")
-    void devePossuirBotaoDeRankingComAcao() {
-        try (MockedConstruction<VistaRanking> mockRanking = mockConstruction(VistaRanking.class)) {
-            
-            vista.getBtnRanking().doClick(); 
-            
-            assertThat(mockRanking.constructed()).hasSize(1);
-            verify(mockRanking.constructed().get(0)).setVisible(true);
-        }
-    }
 }

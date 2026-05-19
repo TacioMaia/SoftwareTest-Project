@@ -1,4 +1,4 @@
-package st.project;
+package st.project.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ public class GerenciadorUsuarios {
     private GerenciadorUsuarios() {
         usuarios = new ArrayList<>();
         // Superusuário (admin) exigido no requisito
-        usuarios.add(new Usuario("admin", "admin", "👑 Admin"));
+        usuarios.add(new Usuario("admin", "admin", "Admin"));
     }
 
     public static GerenciadorUsuarios getInstancia() {
