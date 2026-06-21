@@ -24,4 +24,24 @@ public class Usuario {
     
     public int getSessoesJogadas() { return sessoesJogadas; }
     public void incrementarSessao() { this.sessoesJogadas++; }
+    
+
+    public void setSessoesJogadas(int sessoes) { this.sessoesJogadas = sessoes; }
+
+   
+    public String toCSV() {
+        return login + ";" + senha + ";" + avatar + ";" + pontuacaoMaxima + ";" + sessoesJogadas;
+    }
+
+   
+    public static Usuario fromCSV(String linha) {
+        String[] dados = linha.split(";");
+        if (dados.length >= 5) {
+            Usuario u = new Usuario(dados[0], dados[1], dados[2]);
+            u.setPontuacaoMaxima(Integer.parseInt(dados[3]));
+            u.setSessoesJogadas(Integer.parseInt(dados[4]));
+            return u;
+        }
+        return null;
+    }
 }

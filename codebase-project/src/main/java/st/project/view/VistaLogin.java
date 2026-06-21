@@ -1,12 +1,18 @@
 package st.project.view;
 
-import javax.swing.*;
+import java.awt.GridLayout;
 
-import st.project.model.GerenciadorUsuarios;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
 import st.project.controller.JogoController;
 import st.project.model.Game;
-
-import java.awt.*;
+import st.project.model.GerenciadorUsuarios;
 
 public class VistaLogin extends JFrame {
     private JTextField txtLogin;
@@ -55,16 +61,26 @@ public class VistaLogin extends JFrame {
             }
         });
 
-        btnRegistar.addActionListener(e -> {
-            String log = txtLogin.getText();
-            String sen = new String(txtSenha.getPassword());
-            String ava = txtAvatar.getText().isEmpty() ? "👤" : txtAvatar.getText();
-            
-            if (GerenciadorUsuarios.getInstancia().cadastrar(log, sen, ava)) {
-                JOptionPane.showMessageDialog(this, "Registo efetuado com sucesso!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Este utilizador já existe.");
-            }
-        });
+         btnRegistar.addActionListener(e -> {
+                    String log = txtLogin.getText().trim(); 
+                    String sen = new String(txtSenha.getPassword());
+                    String ava = txtAvatar.getText().isEmpty() ? "👤" : txtAvatar.getText();
+                    
+                    
+                    if (log.isEmpty() || sen.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Login e Senha não podem estar vazios!");
+                        return; 
+                    }
+                    if (log.length() > 15 || sen.length() > 15) {
+                        JOptionPane.showMessageDialog(this, "O Login e a Senha devem ter no máximo 15 caracteres!");
+                        return; 
+                    }
+
+                    if (GerenciadorUsuarios.getInstancia().cadastrar(log, sen, ava)) {
+                        JOptionPane.showMessageDialog(this, "Registo efetuado com sucesso!");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Este utilizador já existe.");
+                    }
+                });
     }
 }

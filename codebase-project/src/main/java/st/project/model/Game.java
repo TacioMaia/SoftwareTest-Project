@@ -191,6 +191,7 @@ public class Game {
         if (pontuacaoTotal > u.getPontuacaoMaxima()) {
             u.setPontuacaoMaxima(pontuacaoTotal);
         }
+        GerenciadorUsuarios.getInstancia().salvarNoArquivo();
     }
 
     public Room getSalaAtual() { return currentRoom; }
