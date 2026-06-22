@@ -1,10 +1,5 @@
 package st.project.system;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -26,13 +21,16 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JViewport;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.MockedStatic;
+import static org.mockito.Mockito.mockStatic;
 
 import st.project.model.Game;
 import st.project.model.GerenciadorUsuarios;
@@ -66,7 +64,7 @@ public class JornadasDoUsuarioTest {
 
         try (MockedStatic<JOptionPane> dialogo = mockStatic(JOptionPane.class)) {
             clicarBotao(login, "btnRegistar");
-            dialogo.verify(() -> JOptionPane.showMessageDialog(eq(login), eq("Registo efetuado com sucesso!")));
+            dialogo.verify(() -> JOptionPane.showMessageDialog(eq(login), eq("Registro efetuado com sucesso!")));
         }
 
         boolean registrado = GerenciadorUsuarios.getInstancia().getUsuarios().stream()
@@ -103,7 +101,7 @@ public class JornadasDoUsuarioTest {
 
         try (MockedStatic<JOptionPane> dialogo = mockStatic(JOptionPane.class)) {
             clicarBotao(login, "btnRegistar");
-            dialogo.verify(() -> JOptionPane.showMessageDialog(eq(login), eq("Este utilizador já existe.")));
+            dialogo.verify(() -> JOptionPane.showMessageDialog(eq(login), eq("Este usuário já existe.")));
         }
 
         long ocorrencias = GerenciadorUsuarios.getInstancia().getUsuarios().stream()
