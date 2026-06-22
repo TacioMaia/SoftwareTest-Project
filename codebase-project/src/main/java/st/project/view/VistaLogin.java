@@ -40,7 +40,7 @@ public class VistaLogin extends JFrame {
         add(txtAvatar);
 
         btnEntrar = new JButton("Entrar no Jogo");
-        btnRegistar = new JButton("Registar Novo");
+        btnRegistar = new JButton("Registrar Novo");
         add(btnEntrar);
         add(btnRegistar);
 
@@ -77,9 +77,9 @@ public class VistaLogin extends JFrame {
                     }
 
                     if (GerenciadorUsuarios.getInstancia().cadastrar(log, sen, ava)) {
-                        JOptionPane.showMessageDialog(this, "Registo efetuado com sucesso!");
+                        JOptionPane.showMessageDialog(this, "Registro efetuado com sucesso!");
                     } else {
-                        JOptionPane.showMessageDialog(this, "Este utilizador já existe.");
+                        JOptionPane.showMessageDialog(this, "Este usuário já existe.");
                     }
                 });
     }

@@ -13,7 +13,7 @@ public class GerenciadorUsuarios {
     private Usuario usuarioLogado;
     
     
-    private static final Path ARQUIVO = Paths.get("usuarios.txt");
+    private static Path ARQUIVO = Paths.get("usuarios.txt");
 
     private GerenciadorUsuarios() {
         usuarios = new ArrayList<>();

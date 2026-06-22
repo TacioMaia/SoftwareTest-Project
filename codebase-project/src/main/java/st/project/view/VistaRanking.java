@@ -1,12 +1,17 @@
 package st.project.view;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.util.List;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 
 import st.project.model.GerenciadorUsuarios;
 import st.project.model.Usuario;
-
-import java.awt.*;
-import java.util.List;
 
 public class VistaRanking extends JFrame {
     public VistaRanking() {
@@ -28,14 +33,14 @@ public class VistaRanking extends JFrame {
         add(new JScrollPane(lista), BorderLayout.CENTER);
 
         if (GerenciadorUsuarios.getInstancia().getUsuarioLogado().getLogin().equals("admin")) {
-            JButton btnExcluir = new JButton("Remover Utilizador Selecionado");
+            JButton btnExcluir = new JButton("Remover Usuário Selecionado");
             btnExcluir.addActionListener(e -> {
                 String selecao = lista.getSelectedValue();
                 if (selecao != null) {
                     // Extrai o login que está na posição 1 do texto
                     String login = selecao.split(" ")[1];
                     GerenciadorUsuarios.getInstancia().removerUsuario(login);
-                    JOptionPane.showMessageDialog(this, "Utilizador removido.");
+                    JOptionPane.showMessageDialog(this, "Usuário removido.");
                     dispose(); 
                 }
             });

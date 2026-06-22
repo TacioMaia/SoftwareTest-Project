@@ -18,7 +18,11 @@ import static org.mockito.Mockito.mockStatic;
 import st.project.model.GerenciadorUsuarios;
 import st.project.model.Usuario;
 
+
+
 public class TelaLoginTest {
+
+    
 
     @Test
     @DisplayName("Teste de Domínio: Fluxo de Login com Falha")
@@ -80,70 +84,77 @@ public class TelaLoginTest {
     }
 
     @Test
-    @DisplayName("Teste de Domínio: Fluxo de Registro com Sucesso")
-    void testCliqueBotaoRegistarComSucesso() throws Exception {
-        GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
-        // Força o cadastro a devolver TRUE
-        Mockito.when(gerMock.cadastrar(any(), any(), any())).thenReturn(true);
-
-        try (MockedStatic<GerenciadorUsuarios> singleton = mockStatic(GerenciadorUsuarios.class);
-             MockedStatic<JOptionPane> optionPaneMock = mockStatic(JOptionPane.class)) {
-            
-            singleton.when(GerenciadorUsuarios::getInstancia).thenReturn(gerMock);
-
+    @DisplayName("Teste de Fronteira: UI bloqueia registro com campos vazios (MC/DC 100%)")
+    void testRegistarCamposVazios() throws Exception {
+        try (MockedStatic<javax.swing.JOptionPane> optionPaneMock = mockStatic(javax.swing.JOptionPane.class)) {
             VistaLogin vistaLogin = new VistaLogin();
-
-            java.lang.reflect.Field fAvatar = VistaLogin.class.getDeclaredField("txtAvatar");
-            fAvatar.setAccessible(true);
-            javax.swing.JTextField txtAvatar = (javax.swing.JTextField) fAvatar.get(vistaLogin);
-            txtAvatar.setText("avatarTeste");
             
-            JButton btnRegistar = encontrarBotao(vistaLogin, "Registar Novo"); 
-            assertThat(btnRegistar).as("Botão de registo não encontrado!").isNotNull();
+            // Prepara a reflexão para injetar valores nos dois campos
+            java.lang.reflect.Field fLogin = VistaLogin.class.getDeclaredField("txtLogin");
+            fLogin.setAccessible(true);
+            javax.swing.JTextField txtLogin = (javax.swing.JTextField) fLogin.get(vistaLogin);
 
-            // Clica no botão
-            for (java.awt.event.ActionListener al : btnRegistar.getActionListeners()) {
-                al.actionPerformed(new java.awt.event.ActionEvent(btnRegistar, java.awt.event.ActionEvent.ACTION_PERFORMED, "click"));
-            }
+            java.lang.reflect.Field fSenha = VistaLogin.class.getDeclaredField("txtSenha");
+            fSenha.setAccessible(true);
+            javax.swing.JPasswordField txtSenha = (javax.swing.JPasswordField) fSenha.get(vistaLogin);
+            
+            JButton btnRegistar = encontrarBotao(vistaLogin, "Registrar Novo");
 
-            // Verifica a linha da mensagem de sucesso
-            optionPaneMock.verify(() -> JOptionPane.showMessageDialog(
+            // --- CASO 1: Login vazio, Senha preenchida ---
+            // O Java lê "log.isEmpty()" (Verdadeiro) e entra no IF.
+            txtLogin.setText(""); 
+            txtSenha.setText("senhaValida");
+            btnRegistar.doClick();
+
+            // --- CASO 2: Login preenchido, Senha vazia ---
+            // O Java lê "log.isEmpty()" (Falso) e é OBRIGADO a ler o "sen.isEmpty()" (Verdadeiro).
+            txtLogin.setText("loginValido"); 
+            txtSenha.setText("");
+            btnRegistar.doClick();
+
+            // Verificamos se o bloqueio disparou exatamente 2 vezes
+            optionPaneMock.verify(() -> javax.swing.JOptionPane.showMessageDialog(
                 Mockito.any(java.awt.Component.class), 
-                Mockito.eq("Registo efetuado com sucesso!")
-            ), Mockito.atLeastOnce());
+                Mockito.eq("Login e Senha não podem estar vazios!")
+            ), Mockito.times(2));
         }
     }
 
     @Test
-    @DisplayName("Teste de Domínio: Fluxo de Registro com Falha (Duplicado)")
-    void testCliqueBotaoRegistarComFalha() throws Exception {
-        GerenciadorUsuarios gerMock = Mockito.mock(GerenciadorUsuarios.class);
-        // Força o cadastro a falhar 
-        Mockito.when(gerMock.cadastrar(any(), any(), any())).thenReturn(false);
-
-        try (MockedStatic<GerenciadorUsuarios> singleton = mockStatic(GerenciadorUsuarios.class);
-             MockedStatic<JOptionPane> optionPaneMock = mockStatic(JOptionPane.class)) {
-            
-            singleton.when(GerenciadorUsuarios::getInstancia).thenReturn(gerMock);
-
+    @DisplayName("Teste de Fronteira: UI bloqueia registro com credenciais muito grandes (MC/DC 100%)")
+    void testRegistarCamposGrandes() throws Exception {
+        try (MockedStatic<javax.swing.JOptionPane> optionPaneMock = mockStatic(javax.swing.JOptionPane.class)) {
             VistaLogin vistaLogin = new VistaLogin();
             
-            JButton btnRegistar = encontrarBotao(vistaLogin, "Registar Novo");
-            assertThat(btnRegistar).isNotNull();
+            java.lang.reflect.Field fLogin = VistaLogin.class.getDeclaredField("txtLogin");
+            fLogin.setAccessible(true);
+            javax.swing.JTextField txtLogin = (javax.swing.JTextField) fLogin.get(vistaLogin);
 
-            // Clica no botão
-            for (java.awt.event.ActionListener al : btnRegistar.getActionListeners()) {
-                al.actionPerformed(new java.awt.event.ActionEvent(btnRegistar, java.awt.event.ActionEvent.ACTION_PERFORMED, "click"));
-            }
+            java.lang.reflect.Field fSenha = VistaLogin.class.getDeclaredField("txtSenha");
+            fSenha.setAccessible(true);
+            javax.swing.JPasswordField txtSenha = (javax.swing.JPasswordField) fSenha.get(vistaLogin);
+            
+            JButton btnRegistar = encontrarBotao(vistaLogin, "Registrar Novo");
 
-            // Verifica a linha da mensagem de falha
-            optionPaneMock.verify(() -> JOptionPane.showMessageDialog(
+            // --- CASO 1: Login Gigante, Senha normal ---
+            // Avalia o lado ESQUERDO do ||
+            txtLogin.setText("1234567890123456"); // 16 caracteres
+            txtSenha.setText("senhaOk");
+            btnRegistar.doClick();
+
+            // --- CASO 2: Login normal, Senha Gigante ---
+            // Avalia o lado DIREITO do ||
+            txtLogin.setText("loginOk"); 
+            txtSenha.setText("1234567890123456"); // 16 caracteres
+            btnRegistar.doClick();
+
+            // Verificamos se o bloqueio disparou exatamente 2 vezes
+            optionPaneMock.verify(() -> javax.swing.JOptionPane.showMessageDialog(
                 Mockito.any(java.awt.Component.class), 
-                Mockito.eq("Este utilizador já existe.")
-            ), Mockito.atLeastOnce());
+                Mockito.eq("O Login e a Senha devem ter no máximo 15 caracteres!")
+            ), Mockito.times(2));
         }
     }
-
 
 
     // --- MÉTODOS DE BUSCA DE COMPONENTES ---

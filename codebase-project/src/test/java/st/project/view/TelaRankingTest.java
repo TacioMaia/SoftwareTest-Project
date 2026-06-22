@@ -29,7 +29,7 @@ public class TelaRankingTest {
             singleton.when(GerenciadorUsuarios::getInstancia).thenReturn(gerMock);
 
             VistaRanking vista = new VistaRanking();
-            JButton btnRemover = encontrarBotao(vista, "Remover Utilizador Selecionado");
+            JButton btnRemover = encontrarBotao(vista, "Remover Usuário Selecionado");
 
             // O botão pode não ter sido adicionado à tela (null) ou estar invisível (isVisible = false)
             boolean estaVisivel = (btnRemover != null && btnRemover.isVisible());
@@ -50,7 +50,7 @@ public class TelaRankingTest {
             singleton.when(GerenciadorUsuarios::getInstancia).thenReturn(gerMock);
 
             VistaRanking vista = new VistaRanking();
-            JButton btnRemover = encontrarBotao(vista, "Remover Utilizador Selecionado");
+            JButton btnRemover = encontrarBotao(vista, "Remover Usuário Selecionado");
 
             // Para o admin, o botão TEM de existir e estar visível
             assertThat(btnRemover).isNotNull();
@@ -88,7 +88,7 @@ public class TelaRankingTest {
     }
 
     @Test
-    @DisplayName("Teste de Domínio: Admin remove um utilizador com sucesso")
+    @DisplayName("Teste de Domínio: Admin remove um usuário com sucesso")
     void testAcaoBotaoRemover() throws Exception {
         Usuario uAdmin = new Usuario("admin", "admin", "A");
         Usuario uAlvo = new Usuario("alvo", "123", "avatar");
@@ -110,7 +110,7 @@ public class TelaRankingTest {
             lista.setSelectedIndex(0); // Seleciona o primeiro da lista
 
             // Encontra o botão de remover e clica nele
-            JButton btnRemover = encontrarBotao(vista, "Remover Utilizador Selecionado");
+            JButton btnRemover = encontrarBotao(vista, "Remover Usuário Selecionado");
             org.assertj.core.api.Assertions.assertThat(btnRemover).isNotNull();
             
             for (java.awt.event.ActionListener al : btnRemover.getActionListeners()) {
@@ -123,7 +123,7 @@ public class TelaRankingTest {
             
             optionPaneMock.verify(() -> javax.swing.JOptionPane.showMessageDialog(
                 Mockito.any(java.awt.Component.class), 
-                Mockito.eq("Utilizador removido.")
+                Mockito.eq("Usuário removido.")
             ));
         
             org.assertj.core.api.Assertions.assertThat(vista.isDisplayable()).isFalse();
