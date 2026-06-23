@@ -40,7 +40,7 @@ public class IntegracaoTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração (Out-of-Process): Cadastro deve persistir dados fisicamente no .txt")
+    @DisplayName("TI01: Cadastro deve persistir dados fisicamente no .txt")
     void testIntegracao_CadastroSalvaNoArquivo() throws IOException {
         GerenciadorUsuarios ger = GerenciadorUsuarios.getInstancia();
         
@@ -57,7 +57,7 @@ public class IntegracaoTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração Estrutural: Recuperar estado ao reiniciar o sistema")
+    @DisplayName("TI02: Recuperar estado ao reiniciar o sistema")
     void testIntegracao_CarregarDoArquivoAoIniciar() throws Exception {
         // Escreve dados diretamente no disco simulando uma sessão anterior
         String dadosAntigos = "admin;admin;Admin;0;0\nvelhoUser;123;X;500;3\n";
@@ -77,7 +77,7 @@ public class IntegracaoTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração (Resiliência): Sistema deve ignorar linhas corrompidas no ficheiro .txt sem crashar")
+    @DisplayName("TI03: Sistema deve ignorar linhas corrompidas no arquivo .txt sem crashar")
     void testIntegracao_FicheiroCorrompido() throws Exception {
         // Simula um arquivo corrompido ou editado de forma errada
         String dadosCorrompidos = "admin;admin;Admin;0;0\n" + 
@@ -99,7 +99,7 @@ public class IntegracaoTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração (Update): Atualização de recorde deve ser refletida fisicamente no arquivo")
+    @DisplayName("TI04: Atualização de recorde deve ser refletida fisicamente no arquivo")
     void testIntegracao_AtualizaRecordeNoFicheiro() throws Exception {
         // Cadastra o usuário e força o sistema a escrever no arquivo
         GerenciadorUsuarios ger = GerenciadorUsuarios.getInstancia();
@@ -122,7 +122,7 @@ public class IntegracaoTest {
     }
 
     @Test
-    @DisplayName("Teste de Integração (Delete): Remoção de usuário deve apagá-lo permanentemente do disco")
+    @DisplayName("TI05: Remoção de usuário deve apagá-lo permanentemente do disco")
     void testIntegracao_RemocaoDeletaDoFicheiro() throws Exception {
         // Cria dois usuários
         GerenciadorUsuarios ger = GerenciadorUsuarios.getInstancia();

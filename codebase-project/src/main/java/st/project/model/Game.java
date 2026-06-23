@@ -5,7 +5,7 @@ import java.util.Random;
 public class Game {
     private Room currentRoom;
     private int passosRestantes;
-    private int passosIniciais = 55; 
+    private int passosIniciais = 30; 
     private int nivelAtual;
     private int pontuacaoTotal;
     private boolean temRecursoExtra;
