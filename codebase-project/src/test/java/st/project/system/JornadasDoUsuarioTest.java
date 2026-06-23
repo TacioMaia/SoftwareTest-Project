@@ -296,6 +296,35 @@ public class JornadasDoUsuarioTest {
         assertThat(obterJanela(VistaLogin.class)).isNotNull(); // Login voltou à tela
     }
 
+    @Test
+    @DisplayName("UJ14 - admin tenta remover um utilizador sem selecionar nenhum na lista")
+    void testUJ14_AdminClicaRemoverSemSelecionar() throws Exception {
+        // Cadastra um utilizador para garantir que a lista tem elementos
+        GerenciadorUsuarios.getInstancia().cadastrar("intocavel", "123456", "av");
+        VistaJogo telaJogo = logarEAbrirJogo("admin"); // Loga como administrador
+
+        clicarBotao(telaJogo, "btnRanking");
+        VistaRanking telaRanking = obterJanela(VistaRanking.class);
+
+        JButton btnExcluir = obterBotaoRemoverRanking(telaRanking);
+        assertThat(btnExcluir).isNotNull(); 
+
+        
+        try (MockedStatic<JOptionPane> dialogo = mockStatic(JOptionPane.class)) {
+            btnExcluir.doClick();
+            
+           
+            dialogo.verifyNoInteractions();
+        }
+
+       
+        assertThat(telaRanking.isDisplayable()).isTrue();
+        
+       
+        assertThat(GerenciadorUsuarios.getInstancia().getUsuarios())
+            .anyMatch(u -> u.getLogin().equals("intocavel"));
+    }
+
     // =========================================================================
     // MÉTODOS AUXILIARES (NAVEGAÇÃO, REFLECTION E SWING)
     // =========================================================================
