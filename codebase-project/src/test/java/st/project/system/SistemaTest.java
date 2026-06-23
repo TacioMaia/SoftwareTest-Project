@@ -39,7 +39,7 @@ import st.project.view.VistaJogo;
 import st.project.view.VistaLogin;
 import st.project.view.VistaRanking;
 
-public class JornadasDoUsuarioTest {
+public class SistemaTest {
 
     @BeforeEach
     void setup() {
@@ -126,7 +126,7 @@ public class JornadasDoUsuarioTest {
     }
 
     @Test
-    @DisplayName("UJ05 - login com credenciais inválidas mantém o jogador retido na tela de login")
+    @DisplayName("UJ05 - login com credenciais inválidas mantém o jogador preso na tela de login")
     void testUJ05_LoginComCredenciaisInvalidasPermaneceNaTela() throws Exception {
         VistaLogin login = new VistaLogin();
         login.setVisible(true);
@@ -144,7 +144,7 @@ public class JornadasDoUsuarioTest {
     }
 
     @Test
-    @DisplayName("UJ06 - jogador anda pelo labirinto real e coleta o recurso")
+    @DisplayName("UJ06 - jogador anda pelo labirinto e coleta o recurso")
     void testUJ06_JogadorColetaORecursoAndandoPeloLabirinto() throws Exception {
         VistaJogo tela = logarEAbrirJogo("jogador3");
         Game game = getGame(tela);
@@ -189,7 +189,7 @@ public class JornadasDoUsuarioTest {
 
         assertThat(game.getNivelAtual()).isEqualTo(1); // Nível reseta/mantém-se no mínimo
         assertThat(game.hasRecurso()).isFalse();
-        assertThat(getLabelStatus(tela).getText()).contains("Passos: 55"); // Passos resetados, confirmando novo mapa
+        assertThat(getLabelStatus(tela).getText()).contains("Passos: 30"); // Passos resetados, confirmando novo mapa
     }
 
     @Test
@@ -326,7 +326,7 @@ public class JornadasDoUsuarioTest {
     }
 
     // =========================================================================
-    // MÉTODOS AUXILIARES (NAVEGAÇÃO, REFLECTION E SWING)
+    // MÉTODOS AUXILIARES 
     // =========================================================================
 
     private int obterTeclaDirecaoLivre(Game game) {

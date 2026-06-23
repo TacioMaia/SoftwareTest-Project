@@ -114,7 +114,7 @@ class GameTest {
         
         assertThat(game.getNivelAtual()).isEqualTo(2); 
         assertThat(game.getPontuacaoTotal()).isEqualTo(300); // 500 - 200
-        assertThat(game.getPassosRestantes()).isEqualTo(55); // Mapa recarregado
+        assertThat(game.getPassosRestantes()).isEqualTo(30); // Mapa recarregado
     }
 
     // Verifica o que acontece se cair no alçapão sem recurso no nivel 1. não aplica os -200 pontos e permanece no nivel 1
@@ -134,7 +134,7 @@ class GameTest {
         
         assertThat(game.getNivelAtual()).isEqualTo(1); // Blindado de cair para 0
         assertThat(game.getPontuacaoTotal()).isEqualTo(150); // Blindado de perder pontos
-        assertThat(game.getPassosRestantes()).isEqualTo(55); // Mapa recarregado
+        assertThat(game.getPassosRestantes()).isEqualTo(30); // Mapa recarregado
     }
 
     // Verifica que chegar na sala da saída avança o nível 1 vai para 2, da 200 pontos, e recarrega o mapa (passos voltam a 55 no novo nivel)
@@ -153,7 +153,7 @@ class GameTest {
         
         assertThat(game.getNivelAtual()).isEqualTo(2);
         assertThat(game.getPontuacaoTotal()).isEqualTo(200);
-        assertThat(game.getPassosRestantes()).isEqualTo(55); // Mapa recarregado
+        assertThat(game.getPassosRestantes()).isEqualTo(30); // Mapa recarregado
     }
 
     // Verifica que o jogo não quebra nem consome passo quando recebe entradas anormais
@@ -475,7 +475,7 @@ class GameTest {
         
         assertThat(jogoReal.getNivelAtual()).isEqualTo(1);
         assertThat(jogoReal.isGameOver()).isFalse();
-        assertThat(jogoReal.getPassosRestantes()).isEqualTo(55);
+        assertThat(jogoReal.getPassosRestantes()).isEqualTo(30);
         assertThat(jogoReal.getSalaAtual()).isNotNull();
 
         Room salaInicial = jogoReal.getSalaAtual();
@@ -487,7 +487,7 @@ class GameTest {
 
         if (direcaoValida != null) {
             jogoReal.mover(direcaoValida);
-            assertThat(jogoReal.getPassosRestantes()).isEqualTo(54);
+            assertThat(jogoReal.getPassosRestantes()).isEqualTo(29);
             assertThat(jogoReal.getSalaAtual()).isNotEqualTo(salaInicial);
         }
     }

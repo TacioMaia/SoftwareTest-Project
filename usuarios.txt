@@ -1,0 +1,8 @@
+admin;admin;Admin;400;4
+tacio;tacio;tacio;2400;1
+breno;breno;😶‍🌫️😶‍🌫️😶‍🌫️;1800;1
+thallisson;1234;ajfsdfsd;2600;4
+rafaelaraujo;rafaelaraujo;rafael;3400;4
+new;new;👤;400;1
+123456789;123456789;👤;0;0
+rafael;rafael;⚠️;0;1
